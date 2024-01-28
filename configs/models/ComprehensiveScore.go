@@ -52,6 +52,7 @@ type PhysicalCourseScoreT1 struct {
 type AestheticQualities struct {
 	aestheticSorce                      float64            `json:"-"`
 	culturalArtPracticeScoreM1          float64            // 文化艺术实践成绩M1
+	culturalArtPracticeScoreM1Source    map[string]float64 `json:"-"`
 	culturalArtCompetitionScoreM2       float64            // 文化艺术竞赛获奖得分M2
 	culturalArtCompetitionScoreM2Source map[string]float64 //竞赛
 }
