@@ -10,6 +10,5 @@ type Form struct {
 	advice         string
 }
 
-// 申请条目
 type Item struct {
 }
