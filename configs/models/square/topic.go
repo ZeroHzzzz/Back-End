@@ -14,7 +14,8 @@ type Topic struct {
 }
 
 type Reply struct {
-	ReplyId   string    `json:"replyId"`
+	ItemId    string    `json:"itemId"`  //回复本身的id
+	ReplyId   string    `json:"replyId"` // 回复的上一级的id
 	Content   string    `json:"content"`
 	ReplyerId string    `json:"replyerId"`
 	Likes     int       `json:"likes"` //点赞量
