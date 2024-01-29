@@ -16,7 +16,7 @@ type ScoreList struct {
 type Moral struct {
 	Total int          `bson:"total"`
 	D1    int          `bson:"D-基本评定分"`
-	D2    int          `bson:"D-记实加减分"`
+	D2    int          `bson:"F-记实加减分"`
 	D2_1  int          `bson:"d-集体评定等级分"`
 	D2_2  int          `bson:"d-社会责任记实分"`
 	D2_3  int          `bson:"d-思政学习加减分"`
@@ -25,35 +25,35 @@ type Moral struct {
 }
 type Physical struct {
 	Total int          `bson:"total"`
-	T1    int          `bson:"体育课程成绩"`
-	T2    int          `bson:"课外体育活动成绩"`
-	T2_1  Score_Source `bson:"体育竞赛获奖得分"`
-	T2_2  int          `bson:"早锻炼得分"`
+	T1    int          `bson:"D-体育课程成绩"`
+	T2    int          `bson:"F-课外体育活动成绩"`
+	T2_1  Score_Source `bson:"L-体育竞赛获奖得分"`
+	T2_2  int          `bson:"d-早锻炼得分"`
 }
 
 type Aesthetic struct {
 	Total int          `bson:"total"`
-	M1    int          `bson:"文化艺术实践成绩"`
-	M2    Score_Source `bson:"文化艺术竞赛获奖得分"`
+	M1    int          `bson:"D-文化艺术实践成绩"`
+	M2    Score_Source `bson:"L-文化艺术竞赛获奖得分"` //这里有问题，注意
 }
 
 type Labor struct {
 	Total int `bson:"total"`
-	L1    int `bson:"寝室日常考核基本分"`
-	L1_1  int `bson:"寝室日常考核基本分"`
-	L1_2  int `bson:"“文明寝室”创建、寝室风采展等活动加分"`
-	L1_3  int `bson:"寝室行为表现与卫生状况加减分"`
-	L2    int `bson:"志愿服务分"`
-	L3    int `bson:"实习实训"`
+	L1    int `bson:"F-寝室日常考核基本分"`
+	L1_1  int `bson:"d-寝室日常考核基本分"`
+	L1_2  int `bson:"d-“文明寝室”创建、寝室风采展等活动加分"`
+	L1_3  int `bson:"d-寝室行为表现与卫生状况加减分"`
+	L2    int `bson:"D-志愿服务分"`
+	L3    int `bson:"D-实习实训"`
 }
 
 type Innovation struct {
 	Total int          `bson:"total"`
-	C1    int          `bson:"创新创业成绩"`
-	C1_1  Score_Source `bson:"创新创业竞赛获奖得分"`
-	C1_2  Score_Source `bson:"水平等级考试"`
-	C2    Score_Source `bson:"社会实践活动"`
-	C3    int          `bson:"社会工作"`
+	C1    int          `bson:"F-创新创业成绩"`
+	C1_1  Score_Source `bson:"L-创新创业竞赛获奖得分"`
+	C1_2  Score_Source `bson:"L-水平等级考试"`
+	C2    Score_Source `bson:"L-社会实践活动"`
+	C3    int          `bson:"d-社会工作"`
 }
 
 // 这个类型是用来记录来源的
