@@ -101,12 +101,7 @@ func AuthenticateMiddleware(c *gin.Context, allowedRoles ...string) {
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
-
-	// // 检查特定角色的管理范围
-	// if claims.Role == "admin" && claims.Grade != claims.Grade {
-	// 	c.AbortWithStatus(http.StatusForbidden)
-	// 	return
-	// }
+	c.Next()
 }
 
 // 生成token

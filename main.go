@@ -9,7 +9,12 @@ import (
 
 func main() {
 	// database.Init()
-
+	// err := mongodb.InitMongoClient()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// 	return
+	// }
+	// defer closeMongoClient()
 	r := gin.Default()
 
 	router.Init(r)
