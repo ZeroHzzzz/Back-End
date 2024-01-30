@@ -30,7 +30,6 @@ func Init() {
 	err1 := db.AutoMigrate(
 		&models.Student{},
 		&models.Form{},
-		&models.ComprehensiveScore{},
 		&models.Feedback{},
 		&models.Recommend{},
 	)

@@ -63,7 +63,7 @@ func AuthenticateMiddleware(c *gin.Context, allowedRoles ...string) {
 	}
 
 	currentUser, ok := c.Get("currentUser")
-	if claims.Userid != currentUser.Userid { //从上下文中的用户信息中获取用户id与claims核对
+	if claims.Userid != currentUser.UserId { //从上下文中的用户信息中获取用户id与claims核对
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
