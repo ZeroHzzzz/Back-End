@@ -20,6 +20,7 @@ type modifiedprofileInformation struct {
 }
 
 func ModifiedProfileHandler(c *gin.Context) {
+	//修改密码后token行为可能需要深入考虑
 	c.Header("Content-Type", "application/json")
 
 	const DatabaseName string = ""
