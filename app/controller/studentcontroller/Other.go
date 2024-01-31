@@ -40,9 +40,10 @@ func Feedback(c *gin.Context) {
 	collection := database.Collection(CollectionName)
 
 	newFeeback := models.Feedback{
-		UserId:  feedbackinformation.UserId,
-		Content: feedbackinformation.Content,
-		Status:  false,
+		Category: "Feedback",
+		UserId:   feedbackinformation.UserId,
+		Content:  feedbackinformation.Content,
+		Status:   false,
 	}
 	insertResult, err := collection.InsertOne(context.Background(), newFeeback)
 	if err != nil {
@@ -53,7 +54,8 @@ func Feedback(c *gin.Context) {
 	database = mongoClient.Database(DatabaseName)
 	collection = database.Collection("")
 	filter := bson.M{
-		"userId": feedbackinformation.UserId,
+		"userId":   feedbackinformation.UserId,
+		"category": "Feedback",
 	}
 	modified := bson.M{
 		"$push": bson.M{
