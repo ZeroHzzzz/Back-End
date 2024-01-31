@@ -41,10 +41,12 @@ func GetSubmissionList(c *gin.Context) {
 	database := mongoClient.Database(DatabaseName)
 	collection := database.Collection(CollectionName)
 	// 这里可能会有bug，因为这里是嵌套字段，不知道能不能直接查出来
+	// 获取未审核表单
 	filter := bson.M{
 		"class":      getsubmissionlistinformation.Class,
 		"profession": getsubmissionlistinformation.Profession,
 		"grade":      getsubmissionlistinformation.Grade,
+		"status":     false,
 	}
 	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(getsubmissionlistinformation.Start).SetLimit(getsubmissionlistinformation.End - getsubmissionlistinformation.Start + 1)
 
