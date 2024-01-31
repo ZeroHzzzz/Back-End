@@ -15,7 +15,7 @@ import (
 
 func GetConcreteSorceHandler(c *gin.Context) {
 	const DatabaseName string = ""
-	const CollectionName string = ""
+	const CollectionName string = "Score"
 	// 上传申报
 	c.Header("Content-Type", "application/json")
 	userId := c.Param("userId")
@@ -81,7 +81,7 @@ func GetYearScoreHandler(c *gin.Context) {
 		log.Fatal(err)
 		return
 	}
-	utils.ResponseSuccess(c, student.Grade)
+	utils.ResponseSuccess(c, student.Mark)
 	return
 
 }
