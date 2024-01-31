@@ -16,7 +16,7 @@ import (
 type CurrentUser struct {
 	UserId     string
 	userName   string
-	grade      int
+	grade      map[string]int
 	profession string
 }
 
