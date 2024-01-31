@@ -13,8 +13,11 @@ import (
 )
 
 type getSubmissionListInformation struct {
-	Start int64 `json:"start" binding:"required"`
-	End   int64 `json:"end" binding:"required"`
+	Start      int64 `json:"start" binding:"required"`
+	End        int64 `json:"end" binding:"required"`
+	Profession int64 `json:"profession"`
+	Grade      int64 `json:"grade"` //年级
+	Class      int64 `json:"class"`
 }
 
 func GetSubmissionList(c *gin.Context) {
@@ -37,7 +40,12 @@ func GetSubmissionList(c *gin.Context) {
 	}
 	database := mongoClient.Database(DatabaseName)
 	collection := database.Collection(CollectionName)
-	filter := bson.D{}
+	// 这里可能会有bug，因为这里是嵌套字段，不知道能不能直接查出来
+	filter := bson.M{
+		"class":      getsubmissionlistinformation.Class,
+		"profession": getsubmissionlistinformation.Profession,
+		"grade":      getsubmissionlistinformation.Grade,
+	}
 	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(getsubmissionlistinformation.Start).SetLimit(getsubmissionlistinformation.End - getsubmissionlistinformation.Start + 1)
 
 	// 执行查询
