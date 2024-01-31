@@ -1,10 +1,9 @@
 package database
 
 import (
-	config "hr/configs"
-	"hr/configs/models"
-
 	"fmt"
+	config "hr/configs/config"
+	"hr/configs/models"
 	"log"
 
 	"gorm.io/driver/mysql"
@@ -21,21 +20,20 @@ func Init() {
 	name := config.Config.GetString("database.name")
 
 	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True&loc=Local", user, pass, host, port, name)
-
+	// fmt.Println(dsn)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Database connect failed: ", err)
 	}
 	// 建表
-	err1 := db.AutoMigrate(
+	err = db.AutoMigrate(
 		&models.Student{},
-		&models.Form{},
 		&models.Feedback{},
 		&models.Recommend{},
 	)
 
-	if err1 != nil {
-		log.Fatal("Database migrate failed: ", err1)
+	if err != nil {
+		log.Fatal("Database migrate failed: ", err)
 	}
 	DB = db
 }

@@ -1,25 +1,20 @@
 package main
 
 import (
+	database "hr/configs/database/mySQL"
 	"hr/configs/router"
-	"log"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// database.Init()
-	// err := mongodb.InitMongoClient()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	return
-	// }
-	// defer closeMongoClient()
+	database.Init()
 	r := gin.Default()
 
 	router.Init(r)
-	err := r.Run(":3000")
-	if err != nil {
-		log.Fatal("Server start error", err)
-	}
+	// err := r.Run(":3000")
+	// if err != nil {
+	// 	log.Fatal("Server start error", err)
+	// }
+
 }

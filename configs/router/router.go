@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 记得应该进行数据库连接，然后再进行鉴权
 func Init(r *gin.Engine) {
 	// 跨域
 	r.Use(func(c *gin.Context) {

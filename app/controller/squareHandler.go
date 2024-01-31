@@ -37,6 +37,9 @@ type GetTopicListInformation struct {
 }
 
 func GetTopicList(c *gin.Context) {
+	const DatabaseName string = ""
+	const CollectionName string = ""
+
 	var gettopiclistinformation GetTopicListInformation
 	err := c.ShouldBindJSON(&gettopiclistinformation)
 	if err != nil {
@@ -51,8 +54,9 @@ func GetTopicList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
 		return
 	}
-	database := mongoClient.Database("your_database_name")
-	collection := database.Collection("your_collection_name")
+	database := mongoClient.Database(DatabaseName)
+	collection := database.Collection(CollectionName)
+
 	topiclist, err = scoredatabase.GetTopicList(gettopiclistinformation.Start, gettopiclistinformation.End, collection)
 	if err != nil {
 		//处理逻辑
