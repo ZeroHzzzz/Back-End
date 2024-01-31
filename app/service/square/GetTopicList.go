@@ -11,7 +11,7 @@ import (
 
 func GetTopicList(start, end int64, collection *mongo.Collection) ([]square.Topic, error) {
 	filter := bson.D{}
-	options := options.Find().SetSort(bson.D{{"created_at", -1}}).SetSkip(start).SetLimit(end - start + 1)
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(start).SetLimit(end - start + 1)
 
 	// 执行查询
 	cursor, err := collection.Find(context.TODO(), filter, options)

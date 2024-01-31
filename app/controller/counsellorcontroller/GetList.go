@@ -1,13 +1,15 @@
 package counsellorcontroller
 
 import (
-	scoredatabase "hr/app/service/square"
+	"context"
 	"hr/app/utils"
 	"hr/configs/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type getSubmissionListInformation struct {
@@ -35,11 +37,19 @@ func GetTopicList(c *gin.Context) {
 	}
 	database := mongoClient.Database(DatabaseName)
 	collection := database.Collection(CollectionName)
+	filter := bson.D{}
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(getsubmissionlistinformation.Start).SetLimit(getsubmissionlistinformation.End - getsubmissionlistinformation.Start + 1)
 
-	list, err = scoredatabase.GetTopicList(getsubmissionlistinformation.Start, getsubmissionlistinformation.End, collection)
+	// 执行查询
+	cursor, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
-		//处理逻辑
+		// 处理
+		return
 	}
-	utils.ResponseSuccess(c, topiclist)
+	if err := cursor.All(context.TODO(), &list); err != nil {
+		return
+	}
+
+	utils.ResponseSuccess(c, list)
 	return
 }
