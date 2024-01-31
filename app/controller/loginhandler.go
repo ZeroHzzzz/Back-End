@@ -13,13 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type CurrentUser struct {
-	UserId     string
-	userName   string
-	grade      map[string]int
-	profession string
-}
-
 func LoginHandler(c *gin.Context) {
 	const DatabaseName string = ""
 	const CollectionName string = ""
@@ -54,11 +47,11 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	currentUser := CurrentUser{
+	currentUser := models.CurrentUser{
 		UserId:     userid,
-		userName:   user.UserName,
-		grade:      user.Grade,
-		profession: user.Profession,
+		UserName:   user.UserName,
+		Grade:      user.Grade,
+		Profession: user.Profession,
 	}
 	c.Set("CurrentUser", currentUser) //将用户信息储存到上下文
 	utils.ResponseSuccess(c, currentUser)

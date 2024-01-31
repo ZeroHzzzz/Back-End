@@ -2,22 +2,16 @@ package studentcontroller
 
 import (
 	"context"
-	"hr/app/controller"
+	"fmt"
 	"hr/app/utils"
+	"hr/configs/models"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-type submitInformation struct {
-	controller.CurrentUser
-	itemName     string
-	academicYear string
-	evidence     []string
-	status       bool
-}
 
 const savePath = ""
 
@@ -49,15 +43,15 @@ func SubmitHandler(c *gin.Context) {
 		return
 	}
 	// 获取的currentUser需要断言
-	if currentUser.(controller.CurrentUser).UserId != userId {
+	if currentUser.(models.CurrentUser).UserId != userId {
 		return
 	}
-	newSubmission := submitInformation{
-		CurrentUser:  currentUser.(controller.CurrentUser),
-		itemName:     itemName,
-		academicYear: academicYear,
-		evidence:     destPaths,
-		status:       false,
+	newSubmission := models.SubmitInformation{
+		CurrentUser:  currentUser.(models.CurrentUser),
+		ItemName:     itemName,
+		AcademicYear: academicYear,
+		Evidence:     destPaths,
+		Status:       false,
 	}
 
 	// 从上下文中获取mongo客户端
@@ -74,4 +68,42 @@ func SubmitHandler(c *gin.Context) {
 		log.Fatal(err)
 	}
 	utils.ResponseSuccess(c, insertResult.InsertedID)
+}
+
+func GetSubmissionStatus(c *gin.Context) {
+	// 从Form数据库中查找，然后返回每个的状态，数据格式应该是一个字典
+	const DatabaseName string = ""
+	const CollectionName string = ""
+	c.Header("Content-Type", "application/json")
+	userId := c.Param("userId")
+
+	// 从上下文中获取mongo客户端
+	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
+		return
+	}
+	database := mongoClient.Database(DatabaseName)
+	collection := database.Collection(CollectionName)
+	filter := bson.M{
+		"userId": userId,
+	}
+
+	result, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		//处理逻辑
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("No matching document found")
+			return
+		}
+		log.Fatal(err)
+		return
+	}
+	var forms []models.SubmitInformation
+	if err := result.All(context.Background(), &forms); err != nil {
+		log.Fatal(err)
+	}
+	utils.ResponseSuccess(c, forms)
+	return
+
 }

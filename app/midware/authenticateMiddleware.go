@@ -1,12 +1,11 @@
 package midware
 
 import (
+	"hr/configs/models"
 	"math/rand"
 	"net/http"
 	"strings"
 	"time"
-
-	"hr/app/controller"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -66,7 +65,7 @@ func AuthenticateMiddleware(c *gin.Context, allowedRoles ...string) {
 
 	currentUser, ok := c.Get("currentUser")
 
-	user, ok := currentUser.(controller.CurrentUser)
+	user, ok := currentUser.(models.CurrentUser)
 	if !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return

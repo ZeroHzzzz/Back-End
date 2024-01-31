@@ -51,6 +51,7 @@ func GetConcreteSorceHandler(c *gin.Context) {
 }
 
 func GetYearScoreHandler(c *gin.Context) {
+	// 传入userId，在student库中查找出对应的学生信息，返回map[string]int类型grade
 	const DatabaseName string = ""
 	const CollectionName string = ""
 	// 上传申报
