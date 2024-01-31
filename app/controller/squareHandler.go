@@ -43,6 +43,7 @@ func GetTopicList(c *gin.Context) {
 		utils.ResponseError(c, "Paramter", "ParameterErrorMsg")
 		return
 	}
+
 	// 获取collection
 	var topiclist []square.Topic
 	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
