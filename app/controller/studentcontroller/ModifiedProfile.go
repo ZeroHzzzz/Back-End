@@ -66,7 +66,6 @@ func ModifiedProfileHandler(c *gin.Context) {
 	}
 	// 从上下文中获取currentUser
 	user, ok := c.Get("currentUser")
-
 	currentUser, ok := user.(models.CurrentUser)
 	if !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)

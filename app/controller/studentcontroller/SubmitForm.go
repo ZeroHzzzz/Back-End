@@ -17,6 +17,8 @@ const savePath = ""
 
 func SubmitHandler(c *gin.Context) {
 	// 上传申报
+	const DatabaseName string = ""
+	const CollectionName string = ""
 	c.Header("Content-Type", "application/json")
 	userId := c.Param("userId")
 	itemName := c.PostForm("itemName")
@@ -46,13 +48,6 @@ func SubmitHandler(c *gin.Context) {
 	if currentUser.(models.CurrentUser).UserId != userId {
 		return
 	}
-	newSubmission := models.SubmitInformation{
-		CurrentUser:  currentUser.(models.CurrentUser),
-		ItemName:     itemName,
-		AcademicYear: academicYear,
-		Evidence:     destPaths,
-		Status:       false,
-	}
 
 	// 从上下文中获取mongo客户端
 	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
@@ -60,12 +55,41 @@ func SubmitHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
 		return
 	}
+	// 新建submission记录
 	database := mongoClient.Database("Form")
 	collection := database.Collection("Submission")
-
+	newSubmission := models.SubmitInformation{
+		CurrentUser:  currentUser.(models.CurrentUser),
+		ItemName:     itemName,
+		AcademicYear: academicYear,
+		Evidence:     destPaths,
+		Status:       false,
+	}
 	insertResult, err := collection.InsertOne(context.Background(), newSubmission)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// student更新submission列表
+	database = mongoClient.Database(DatabaseName)
+	collection = database.Collection("")
+	filter := bson.M{
+		"userId": userId,
+	}
+	modified := bson.M{
+		"$push": bson.M{
+			"SubmissionId": insertResult.InsertedID,
+		},
+	}
+	_, err = collection.UpdateOne(context.TODO(), filter, modified)
+	if err != nil {
+		//处理逻辑
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("No matching document found")
+			return
+		}
+		log.Fatal(err)
+		return
 	}
 	utils.ResponseSuccess(c, insertResult.InsertedID)
 }

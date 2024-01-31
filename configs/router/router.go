@@ -2,7 +2,6 @@ package router
 
 import (
 	"hr/app/controller"
-	"hr/app/controller/studentcontroller"
 	"hr/app/midware"
 	"net/http"
 
@@ -45,7 +44,7 @@ func Init(r *gin.Engine) {
 		student.PUT("/profile/:userId")
 		student.GET("/profile/:userId")
 
-		student.POST("/:userId/form/submit", studentcontroller.SubmitHandler)
+		student.POST("/:userId/form/submit")
 		student.GET("/:userId/form/search")
 
 		student.POST("/feedback")
