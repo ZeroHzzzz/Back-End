@@ -1,7 +1,8 @@
-package controller
+package studentcontroller
 
 import (
 	"context"
+	"hr/app/controller"
 	"hr/app/utils"
 	"log"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 )
 
 type submitInformation struct {
-	CurrentUser
+	controller.CurrentUser
 	itemName     string
 	academicYear string
 	evidence     []string
@@ -20,7 +21,7 @@ type submitInformation struct {
 
 const savePath = ""
 
-func ScoreHandler(c *gin.Context) {
+func SubmitHandler(c *gin.Context) {
 	// 上传申报
 	c.Header("Content-Type", "application/json")
 	userId := c.Param("userId")
@@ -48,11 +49,11 @@ func ScoreHandler(c *gin.Context) {
 		return
 	}
 	// 获取的currentUser需要断言
-	if currentUser.(CurrentUser).UserId != userId {
+	if currentUser.(controller.CurrentUser).UserId != userId {
 		return
 	}
 	newSubmission := submitInformation{
-		CurrentUser:  currentUser.(CurrentUser),
+		CurrentUser:  currentUser.(controller.CurrentUser),
 		itemName:     itemName,
 		academicYear: academicYear,
 		evidence:     destPaths,
@@ -65,8 +66,8 @@ func ScoreHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
 		return
 	}
-	database := mongoClient.Database("your_database_name")
-	collection := database.Collection("your_collection_name")
+	database := mongoClient.Database("Form")
+	collection := database.Collection("Submission")
 
 	insertResult, err := collection.InsertOne(context.Background(), newSubmission)
 	if err != nil {

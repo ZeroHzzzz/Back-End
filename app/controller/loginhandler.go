@@ -15,7 +15,7 @@ type CurrentUser struct {
 	profession string
 }
 
-func loginHandler(c *gin.Context) {
+func LoginHandler(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	userid := c.PostForm("userId")
 	password := c.PostForm("passWord")

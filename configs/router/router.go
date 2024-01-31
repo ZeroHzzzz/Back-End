@@ -1,6 +1,8 @@
 package router
 
 import (
+	"hr/app/controller"
+	"hr/app/controller/studentcontroller"
 	"hr/app/midware"
 	"net/http"
 
@@ -25,7 +27,7 @@ func Init(r *gin.Engine) {
 	const prelogin = "/login"
 	login := r.Group(prelogin)
 	{
-		login.GET("/student")
+		login.GET("/student", controller.LoginHandler)
 		login.GET("/counsellor")
 	}
 
@@ -42,7 +44,7 @@ func Init(r *gin.Engine) {
 		student.PUT("/profile/:userId")
 		student.GET("/profile/:userId")
 
-		student.POST("/:userId/form/submit")
+		student.POST("/:userId/form/submit", studentcontroller.SubmitHandler)
 		student.GET("/:userId/form/search")
 
 		student.POST("/feedback")
