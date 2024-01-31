@@ -17,7 +17,7 @@ type getSubmissionListInformation struct {
 	End   int64 `json:"end" binding:"required"`
 }
 
-func GetTopicList(c *gin.Context) {
+func GetSubmissionList(c *gin.Context) {
 	const DatabaseName string = ""
 	const CollectionName string = ""
 
@@ -52,4 +52,32 @@ func GetTopicList(c *gin.Context) {
 
 	utils.ResponseSuccess(c, list)
 	return
+}
+
+func GetSubmission(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+
+	const DatabaseName string = ""
+	const CollectionName string = "" //student
+
+	submissionId := c.Param("submissionId")
+
+	// 从上下文中获取mongo客户端
+	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
+		return
+	}
+	database := mongoClient.Database("DatabaseName")
+	collection := database.Collection("CollectionName")
+	filter := bson.M{"submissionId": submissionId}
+	result := collection.FindOne(c, filter)
+
+	var submission models.SubmitInformation
+	err := result.Decode(&submission)
+	if err != nil {
+		// 处理
+		return
+	}
+	utils.ResponseSuccess(c, submission)
 }
