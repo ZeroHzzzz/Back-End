@@ -31,7 +31,7 @@ func loginHandler(c *gin.Context) {
 		grade:      user.Grade,
 		profession: user.Profession,
 	}
-	c.Set("currentUser", currentUser) //将用户信息储存到上下文
+	c.Set("CurrentUser", currentUser) //将用户信息储存到上下文
 	utils.ResponseSuccess(c, currentUser)
 	return
 }
