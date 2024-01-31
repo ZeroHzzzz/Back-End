@@ -29,9 +29,10 @@ func generateRandomString(length int) string {
 var jwtKey = []byte(generateRandomString(10))
 
 type Claims struct {
-	Userid string `json:"userid"`
-	Role   string `json:"role"`
-	Grade  int    `json:"grade"`
+	Userid     string `json:"userid"`
+	Role       string `json:"role"`
+	Grade      int    `json:"grade"`
+	Profession string `json:"profession"`
 	jwt.StandardClaims
 }
 
@@ -63,21 +64,21 @@ func AuthenticateMiddleware(c *gin.Context, allowedRoles ...string) {
 		return
 	}
 
-	currentUser, ok := c.Get("currentUser")
+	user, ok := c.Get("currentUser")
 
-	user, ok := currentUser.(models.CurrentUser)
+	currentUser, ok := user.(models.CurrentUser)
 	if !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	if claims.Userid != user.UserId { //从上下文中的用户信息中获取用户id与claims核对
+	if claims.Userid != currentUser.UserId { //从上下文中的用户信息中获取用户id与claims核对
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) < 5*time.Minute {
 		// 生成新的Token
-		newToken, err := generateNewToken(claims.Userid, claims.Role, claims.Grade)
+		newToken, err := GenerateNewToken(currentUser)
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
@@ -104,13 +105,14 @@ func AuthenticateMiddleware(c *gin.Context, allowedRoles ...string) {
 }
 
 // 生成token
-func generateNewToken(userid, role string, grade int) (string, error) {
+func GenerateNewToken(currentUser models.CurrentUser) (string, error) {
 	expirationTime := time.Now().Add(30 * time.Minute) // 新Token有效期为30分钟
 
 	claims := &Claims{
-		Userid: userid,
-		Role:   role,
-		Grade:  grade,
+		Userid:     currentUser.UserId,
+		Role:       currentUser.Role,
+		Grade:      currentUser.Grade,
+		Profession: currentUser.Profession,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
