@@ -29,7 +29,6 @@ func Init() {
 	err = db.AutoMigrate(
 		&models.Student{},
 		&models.Feedback{},
-		&models.Recommend{},
 	)
 
 	if err != nil {

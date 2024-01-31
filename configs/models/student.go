@@ -9,7 +9,7 @@ type Student struct {
 	Grade        int            `bson:"grade"` // 这里是年级
 	Mark         map[string]int `bson:"mark"`
 	FeedbackId   []string       `bson:"feedbackId"`  //申诉
-	RecommemdId  []string       `bson:"recommemdId"` // 建议
+	AdviceId     []string       `bson:"recommemdId"` // 建议
 	SubmissionId []string       `bson:"formId"`      // 申报表
 }
 
