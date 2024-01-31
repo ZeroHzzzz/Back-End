@@ -71,26 +71,26 @@ func SubmitHandler(c *gin.Context) {
 	}
 
 	// student更新submission列表
-	database = mongoClient.Database(DatabaseName)
-	collection = database.Collection("")
-	filter := bson.M{
-		"userId": userId,
-	}
-	modified := bson.M{
-		"$push": bson.M{
-			"SubmissionId": insertResult.InsertedID,
-		},
-	}
-	_, err = collection.UpdateOne(context.TODO(), filter, modified)
-	if err != nil {
-		//处理逻辑
-		if err == mongo.ErrNoDocuments {
-			fmt.Println("No matching document found")
-			return
-		}
-		log.Fatal(err)
-		return
-	}
+	// database = mongoClient.Database(DatabaseName)
+	// collection = database.Collection("")
+	// filter := bson.M{
+	// 	"userId": userId,
+	// }
+	// modified := bson.M{
+	// 	"$push": bson.M{
+	// 		"SubmissionId": insertResult.InsertedID,
+	// 	},
+	// }
+	// _, err = collection.UpdateOne(context.TODO(), filter, modified)
+	// if err != nil {
+	// 	//处理逻辑
+	// 	if err == mongo.ErrNoDocuments {
+	// 		fmt.Println("No matching document found")
+	// 		return
+	// 	}
+	// 	log.Fatal(err)
+	// 	return
+	// }
 	utils.ResponseSuccess(c, insertResult.InsertedID)
 }
 

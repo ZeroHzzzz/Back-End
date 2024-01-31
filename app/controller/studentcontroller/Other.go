@@ -2,14 +2,12 @@ package studentcontroller
 
 import (
 	"context"
-	"fmt"
 	"hr/app/utils"
 	"hr/configs/models"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -52,27 +50,27 @@ func Feedback(c *gin.Context) {
 	}
 
 	// student更新feedback列表
-	database = mongoClient.Database(DatabaseName)
-	collection = database.Collection("")
-	filter := bson.M{
-		"userId":   information.UserId,
-		"category": information.Category,
-	}
-	modified := bson.M{
-		"$push": bson.M{
-			"FeedbackId": insertResult.InsertedID,
-		},
-	}
-	_, err = collection.UpdateOne(context.TODO(), filter, modified)
-	if err != nil {
-		//处理逻辑
-		if err == mongo.ErrNoDocuments {
-			fmt.Println("No matching document found")
-			return
-		}
-		log.Fatal(err)
-		return
-	}
+	// database = mongoClient.Database(DatabaseName)
+	// collection = database.Collection("")
+	// filter := bson.M{
+	// 	"userId":   information.UserId,
+	// 	"category": information.Category,
+	// }
+	// modified := bson.M{
+	// 	"$push": bson.M{
+	// 		"FeedbackId": insertResult.InsertedID,
+	// 	},
+	// }
+	// _, err = collection.UpdateOne(context.TODO(), filter, modified)
+	// if err != nil {
+	// 	//处理逻辑
+	// 	if err == mongo.ErrNoDocuments {
+	// 		fmt.Println("No matching document found")
+	// 		return
+	// 	}
+	// 	log.Fatal(err)
+	// 	return
+	// }
 	utils.ResponseSuccess(c, insertResult.InsertedID) //返回文档的id
 	return
 }
@@ -110,27 +108,27 @@ func Advice(c *gin.Context) {
 	}
 
 	// student更新feedback列表
-	database = mongoClient.Database(DatabaseName)
-	collection = database.Collection("")
-	filter := bson.M{
-		"userId":   information.UserId,
-		"category": information.Category,
-	}
-	modified := bson.M{
-		"$push": bson.M{
-			"AdviceId": insertResult.InsertedID,
-		},
-	}
-	_, err = collection.UpdateOne(context.TODO(), filter, modified)
-	if err != nil {
-		//处理逻辑
-		if err == mongo.ErrNoDocuments {
-			fmt.Println("No matching document found")
-			return
-		}
-		log.Fatal(err)
-		return
-	}
+	// database = mongoClient.Database(DatabaseName)
+	// collection = database.Collection("")
+	// filter := bson.M{
+	// 	"userId":   information.UserId,
+	// 	"category": information.Category,
+	// }
+	// modified := bson.M{
+	// 	"$push": bson.M{
+	// 		"AdviceId": insertResult.InsertedID,
+	// 	},
+	// }
+	// _, err = collection.UpdateOne(context.TODO(), filter, modified)
+	// if err != nil {
+	// 	//处理逻辑
+	// 	if err == mongo.ErrNoDocuments {
+	// 		fmt.Println("No matching document found")
+	// 		return
+	// 	}
+	// 	log.Fatal(err)
+	// 	return
+	// }
 	utils.ResponseSuccess(c, insertResult.InsertedID) //返回文档的id
 	return
 }
