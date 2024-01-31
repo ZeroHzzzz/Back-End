@@ -15,6 +15,7 @@ type submitInformation struct {
 	itemName     string
 	academicYear string
 	evidence     []string
+	status       bool
 }
 
 const savePath = ""
@@ -55,6 +56,7 @@ func ScoreHandler(c *gin.Context) {
 		itemName:     itemName,
 		academicYear: academicYear,
 		evidence:     destPaths,
+		status:       false,
 	}
 
 	// 从上下文中获取mongo客户端
