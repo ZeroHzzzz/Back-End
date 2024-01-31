@@ -4,8 +4,10 @@ import (
 	scoredatabase "hr/app/service/square"
 	"hr/app/utils"
 	"hr/configs/models/square"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type CreateTopicInformation struct {
@@ -41,8 +43,16 @@ func GetTopicList(c *gin.Context) {
 		utils.ResponseError(c, "Paramter", "ParameterErrorMsg")
 		return
 	}
+	// 获取collection
 	var topiclist []square.Topic
-	topiclist, err = scoredatabase.GetTopicList(gettopiclistinformation.Start, gettopiclistinformation.End)
+	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
+		return
+	}
+	database := mongoClient.Database("your_database_name")
+	collection := database.Collection("your_collection_name")
+	topiclist, err = scoredatabase.GetTopicList(gettopiclistinformation.Start, gettopiclistinformation.End, collection)
 	if err != nil {
 		//处理逻辑
 	}
