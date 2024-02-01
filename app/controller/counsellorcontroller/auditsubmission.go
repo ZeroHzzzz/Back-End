@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type auditOneSubmissionInformation struct {
@@ -176,4 +177,44 @@ func AuditManySubmission(c *gin.Context) {
 		Error:        errorMessage,
 	}
 	utils.ResponseSuccess(c, response)
+}
+
+type getAuditlist struct {
+	Index          int `json:"index"`
+	PaginationSize int `json:"paginationSize"`
+}
+
+func GetAuditHistory(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+	var information getAuditlist
+	const DatabaseName string = ""
+	const CollectionName string = "" //student
+
+	err := c.ShouldBindJSON(&information)
+	if err != nil {
+		utils.ResponseError(c, "Paramter", "ParameterErrorMsg")
+		return
+	}
+	// 获取collection
+	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
+		return
+	}
+	database := mongoClient.Database(DatabaseName)
+	collection := database.Collection(CollectionName)
+	filter := bson.D{}
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(int64(information.Index) * int64(information.PaginationSize)).SetLimit(int64(information.PaginationSize))
+	result, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		// 处理逻辑
+		return
+	}
+	var list []models.SubmitHistory
+	if err = result.All(context.TODO(), &list); err != nil {
+		// TODO: handle
+		return
+	}
+	utils.ResponseSuccess(c, list)
+	return
 }
