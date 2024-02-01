@@ -13,11 +13,11 @@ import (
 )
 
 type getSubmissionListInformation struct {
-	Start      int64 `json:"start" binding:"required"`
-	End        int64 `json:"end" binding:"required"`
-	Profession int64 `json:"profession"`
-	Grade      int64 `json:"grade"` //年级
-	Class      int64 `json:"class"`
+	Index          int64 `json:"index" binding:"required"`
+	PaginationSize int64 `json:"paginationSize"`
+	Profession     int64 `json:"profession"`
+	Grade          int64 `json:"grade"` //年级
+	Class          int64 `json:"class"`
 }
 
 func GetSubmissionList(c *gin.Context) {
@@ -48,7 +48,7 @@ func GetSubmissionList(c *gin.Context) {
 		"grade":      getsubmissionlistinformation.Grade,
 		"status":     false,
 	}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(getsubmissionlistinformation.Start).SetLimit(getsubmissionlistinformation.End - getsubmissionlistinformation.Start + 1)
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((getsubmissionlistinformation.Index - 1) * getsubmissionlistinformation.PaginationSize).SetLimit(getsubmissionlistinformation.PaginationSize)
 
 	// 执行查询
 	cursor, err := collection.Find(context.TODO(), filter, options)

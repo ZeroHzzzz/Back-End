@@ -180,8 +180,8 @@ func AuditManySubmission(c *gin.Context) {
 }
 
 type getAuditlist struct {
-	Index          int `json:"index"`
-	PaginationSize int `json:"paginationSize"`
+	Index          int64 `json:"index"`
+	PaginationSize int64 `json:"paginationSize"`
 }
 
 func GetAuditHistory(c *gin.Context) {
@@ -204,7 +204,7 @@ func GetAuditHistory(c *gin.Context) {
 	database := mongoClient.Database(DatabaseName)
 	collection := database.Collection(CollectionName)
 	filter := bson.D{}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(int64(information.Index) * int64(information.PaginationSize)).SetLimit(int64(information.PaginationSize))
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((information.Index - 1) * information.PaginationSize).SetLimit(information.PaginationSize)
 	result, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
 		// 处理逻辑

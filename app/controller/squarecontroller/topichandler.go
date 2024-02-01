@@ -80,7 +80,7 @@ func GetTopicList(c *gin.Context) {
 	database := mongoClient.Database(DatabaseName)
 	collection := database.Collection(CollectionName)
 	filter := bson.D{}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(gettopiclistinformation.Index * gettopiclistinformation.PaginationSize).SetLimit(gettopiclistinformation.PaginationSize)
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((gettopiclistinformation.Index - 1) * gettopiclistinformation.PaginationSize).SetLimit(gettopiclistinformation.PaginationSize)
 	result, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
 		// 处理逻辑
