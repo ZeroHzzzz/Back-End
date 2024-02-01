@@ -24,4 +24,4 @@ type SubmitHistory struct {
 	CreateAt     time.Time          `bson:"create_at"`
 }
 
-// 考虑一下要不要合并
+// 考虑一下要不要合并，还有history当中状态感觉应该得有三个，接受，驳回，撤回
