@@ -13,10 +13,11 @@ type Topic struct {
 }
 
 type Reply struct {
-	ReplyId   string    `bson:"_id"`               //回复本身的id
+	ReplyId   string    `bson:"_id"` //回复本身的id
+	TopicId   string    `bson:"topicId"`
 	ParertId  string    `bson:"replyId,omitempty"` // 回复的上一级的id
 	Content   string    `bson:"content"`
-	ReplyerId string    `bson:"replyerId"`
+	UserId    string    `bson:"userId"`
 	Likes     int       `bson:"likes"` //点赞量
 	CreatedAt time.Time `bson:"createdAt"`
 }
