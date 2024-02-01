@@ -2,6 +2,7 @@ package squarecontroller
 
 import (
 	"context"
+	"fmt"
 	"hr/app/utils"
 	"hr/configs/models"
 	"log"
@@ -58,6 +59,8 @@ type GetTopicListInformation struct {
 }
 
 func GetTopicList(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+
 	const DatabaseName string = ""
 	const CollectionName string = ""
 
@@ -89,5 +92,39 @@ func GetTopicList(c *gin.Context) {
 		return
 	}
 	utils.ResponseSuccess(c, list)
+	return
+}
+
+func GetTopic(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+
+	const DatabaseName string = ""
+	const CollectionName string = ""
+	topicId := c.Param("topicId")
+
+	// 获取collection
+	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
+		return
+	}
+	database := mongoClient.Database(DatabaseName)
+	collection := database.Collection(CollectionName)
+
+	filter := bson.M{
+		"_id": topicId,
+	}
+	var topic models.Topic
+	err := collection.FindOne(context.TODO(), filter).Decode(&topic)
+	if err != nil {
+		//处理逻辑
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("No matching document found")
+			return
+		}
+		log.Fatal(err)
+		return
+	}
+	utils.ResponseSuccess(c, topic)
 	return
 }
