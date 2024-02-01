@@ -2,7 +2,7 @@ package scoredatabase
 
 import (
 	"context"
-	"hr/configs/models/square"
+	"hr/configs/models"
 	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,7 +18,7 @@ func CreateTopic(userId string, title string, content string) (interface{}, erro
 	database := client.Database("yourDatabase")
 	collectionName := "yourCollection"
 
-	topic := square.Topic{
+	topic := models.Topic{
 		Title:    title,
 		Content:  content,
 		AutherId: userId,
