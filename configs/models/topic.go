@@ -7,15 +7,14 @@ type Topic struct {
 	Title     string    `bson:"title"`
 	Content   string    `bson:"content"`
 	AutherId  string    `bson:"autherId"`
-	ReplyId   string    `bson:"replyId"`
 	Likes     int       `bson:"likes"`    //点赞量
 	ViewTime  int       `bson:"viewTime"` //浏览量
 	CreatedAt time.Time `bson:"createdAt"`
 }
 
 type Reply struct {
-	ItemId    string    `bson:"itemId"`  //回复本身的id
-	ReplyId   string    `bson:"replyId"` // 回复的上一级的id
+	ReplyId   string    `bson:"_id"`               //回复本身的id
+	ParertId  string    `bson:"replyId,omitempty"` // 回复的上一级的id
 	Content   string    `bson:"content"`
 	ReplyerId string    `bson:"replyerId"`
 	Likes     int       `bson:"likes"` //点赞量
