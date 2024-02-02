@@ -17,7 +17,7 @@ import (
 
 // 创建文章
 type CreateTopicInformation struct {
-	UserId  string `json:"user_id" binding:"userId"`
+	UserId  string `json:"userID" binding:"userId"`
 	Title   string `json:"title" binding:"required"`
 	Content string `json:"content" binding:"required"`
 }
@@ -44,7 +44,7 @@ func NewTopic(c *gin.Context) {
 	newTopic := models.Topic{
 		Title:    topicInformation.Title,
 		Content:  topicInformation.Content,
-		AutherId: topicInformation.UserId,
+		AutherID: topicInformation.UserId,
 	}
 	insertResult, err := collection.InsertOne(context.TODO(), newTopic)
 	if err != nil {
@@ -61,8 +61,8 @@ func GetTopicList(c *gin.Context) {
 
 	const DatabaseName string = ""
 	const CollectionName string = ""
-	lastViewParam := c.Query("lastview")
-	lastView, err := strconv.Atoi(lastViewParam)
+	pageParam := c.Query("page")
+	page, err := strconv.Atoi(pageParam)
 	if err != nil {
 		// TODO
 		return
@@ -82,7 +82,7 @@ func GetTopicList(c *gin.Context) {
 	database := mongoClient.Database(DatabaseName)
 	collection := database.Collection(CollectionName)
 	filter := bson.D{}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(int64(lastView)).SetLimit(int64(limit))
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((int64(page) - 1) * int64(limit)).SetLimit(int64(limit))
 	result, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
 		// 处理逻辑
@@ -146,6 +146,7 @@ func ModifiedTopic(c *gin.Context) {
 		return
 	}
 	topicId := c.Param("topicId")
+
 	// 从上下文中获取currentUser
 	user, ok := c.Get("currentUser")
 	currentUser, ok := user.(models.CurrentUser)
