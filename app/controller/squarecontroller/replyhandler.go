@@ -51,7 +51,7 @@ func ReplyTopic(c *gin.Context) {
 
 	newReply := models.Reply{
 		TopicId:  topicId,
-		ParertId: information.ParentId,
+		ParentId: information.ParentId,
 		Content:  information.Content,
 		UserId:   user.UserId,
 	}
