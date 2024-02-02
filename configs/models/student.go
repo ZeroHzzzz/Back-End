@@ -13,12 +13,4 @@ type Student struct {
 	// SubmissionId []string       `bson:"formId"`      // 申报表
 }
 
-type CurrentUser struct {
-	UserId     string
-	UserName   string
-	Grade      int //这里是年级不是成绩
-	Role       string
-	Profession string
-}
-
 // 有一个值得思考的问题，既然能在submission库中直接通过id找到该用户，那么为什么要增加这几个没有的字段
