@@ -1,7 +1,7 @@
 package router
 
 import (
-	"hr/app/controller"
+	"hr/app/handler"
 	"hr/app/midware"
 	"net/http"
 
@@ -27,7 +27,7 @@ func Init(r *gin.Engine) {
 	const prelogin = "/login"
 	login := r.Group(prelogin)
 	{
-		login.GET("/student", controller.LoginHandler)
+		login.GET("/student", handler.LoginHandler)
 		login.GET("/counsellor")
 	}
 

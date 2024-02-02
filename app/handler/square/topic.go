@@ -1,4 +1,4 @@
-package squarecontroller
+package square
 
 import (
 	"context"
@@ -15,13 +15,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// 创建文章
 type CreateTopicInformation struct {
 	UserId  string `json:"user_id" binding:"userId"`
 	Title   string `json:"title" binding:"required"`
 	Content string `json:"content" binding:"required"`
 }
 
-func CreateTopic(c *gin.Context) {
+func NewTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
 	const DatabaseName string = ""
@@ -54,6 +55,7 @@ func CreateTopic(c *gin.Context) {
 	return
 }
 
+// 文章列表
 func GetTopicList(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
@@ -95,25 +97,18 @@ func GetTopicList(c *gin.Context) {
 	return
 }
 
-type response struct {
-	topic models.Topic
-	reply []models.Reply
-}
-
+// 文章内容
 func GetTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
 	topicId := c.Param("topicId")
 
 	// 获取collection
-	// 这里还要返回这条topic的回复，按照点赞量排序
-	// 其实如果用分页加载的话，只用找点赞前几名的回复就行了
 	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
 		return
 	}
-	// 找文章
 	const DatabaseName string = ""
 	const CollectionName string = ""
 	database := mongoClient.Database(DatabaseName)
@@ -133,101 +128,32 @@ func GetTopic(c *gin.Context) {
 		log.Fatal(err)
 		return
 	}
-	// 找回复
-	// const DatabaseName string = ""
-	// const CollectionName string = ""
-	var reply []models.Reply
-	database = mongoClient.Database(DatabaseName)
-	collection = database.Collection(CollectionName)
-	filter = bson.M{
-		"_id": topicId,
-	}
-	options := options.Find().SetSort(bson.D{{Key: "likes", Value: -1}}).SetLimit(25) //第一次显示25条评论
-	cursor, err := collection.Find(context.TODO(), filter, options)
-	if err != nil {
-		// 处理
-		return
-	}
-	if err := cursor.All(context.TODO(), &reply); err != nil {
-		return
-	}
-	response := response{
-		topic: topic,
-		reply: reply,
-	}
-	utils.ResponseSuccess(c, response)
+
+	utils.ResponseSuccess(c, topic)
 	return
 }
 
-// 这是用来分页加载的
-func GetFatherReply(c *gin.Context) {
-	// 加载父评论
-	c.Header("Content-Type", "application/json")
-	topicId := c.Param("topicId")
-	lastViewParam := c.Query("lastview")
-	lastView, err := strconv.Atoi(lastViewParam)
-	if err != nil {
-		// TODO
-		return
-	}
-	limitParam := c.Query("limit")
-	limit, err := strconv.Atoi(limitParam)
-	if err != nil {
-		// TODO
-		return
-	}
-	// 获取客户端
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	const DatabaseName string = ""
-	const CollectionName string = ""
-	database := mongoClient.Database(DatabaseName)
-	collection := database.Collection(CollectionName)
-
-	filter := bson.M{
-		"_id":     topicId,
-		"partent": "",
-	}
-	options := options.Find().SetSort(bson.D{{Key: "likes", Value: -1}}).SetSkip(int64(lastView)).SetLimit(int64(limit))
-	var parentReply []models.Reply
-	cursor, err := collection.Find(context.TODO(), filter, options)
-	if err != nil {
-		// 处理
-		return
-	}
-	if err := cursor.All(context.TODO(), &parentReply); err != nil {
-		return
-	}
-	utils.ResponseSuccess(c, parentReply)
+type ModifiedTopicInformation struct {
+	Context string `json:"context"`
 }
-func GetSonReply(c *gin.Context) {
-	// /square/{topicId}/reply
-	// 加载子评论
-	c.Header("Content-Type", "application/json")
 
+func ModifiedTopic(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+	var information ModifiedTopicInformation
+	err := c.ShouldBindJSON(&information)
+	if err != nil {
+		// TODO
+		return
+	}
 	topicId := c.Param("topicId")
-	replyIdParams := c.Query("replyId")
-	replyId, err := strconv.Atoi(replyIdParams)
-	if err != nil {
-		// TODO
+	// 从上下文中获取currentUser
+	user, ok := c.Get("currentUser")
+	currentUser, ok := user.(models.CurrentUser)
+	if !ok {
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	lastViewParam := c.Query("lastview")
-	lastView, err := strconv.Atoi(lastViewParam)
-	if err != nil {
-		// TODO
-		return
-	}
-	limitParam := c.Query("limit")
-	limit, err := strconv.Atoi(limitParam)
-	if err != nil {
-		// TODO
-		return
-	}
-	// 获取客户端
+
 	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
@@ -237,20 +163,20 @@ func GetSonReply(c *gin.Context) {
 	const CollectionName string = ""
 	database := mongoClient.Database(DatabaseName)
 	collection := database.Collection(CollectionName)
-
+	// 如果通过文章的id和修改人的id进行查找，如果找不到，说明修改人不是原作者，不允许修改
 	filter := bson.M{
-		"_id":    topicId,
-		"parent": replyId,
+		"topicId": topicId,
+		"userId":  currentUser.UserId,
 	}
-	options := options.Find().SetSort(bson.D{{Key: "likes", Value: -1}}).SetSkip(int64(lastView)).SetLimit(int64(limit))
-	var parentReply []models.Reply
-	cursor, err := collection.Find(context.TODO(), filter, options)
+	modified := bson.M{
+		"$set": bson.M{
+			"content": information.Context,
+		},
+	}
+	_, err = collection.UpdateOne(context.TODO(), filter, modified)
 	if err != nil {
-		// 处理
+		//TODO
 		return
 	}
-	if err := cursor.All(context.TODO(), &parentReply); err != nil {
-		return
-	}
-	utils.ResponseSuccess(c, parentReply)
+	utils.ResponseSuccess(c, nil)
 }

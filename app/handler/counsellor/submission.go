@@ -1,4 +1,4 @@
-package counsellorcontroller
+package counsellor
 
 import (
 	"context"

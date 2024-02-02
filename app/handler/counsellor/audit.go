@@ -1,4 +1,4 @@
-package counsellorcontroller
+package counsellor
 
 import (
 	"context"
@@ -14,19 +14,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type auditOneSubmissionInformation struct {
+type auditOneInformation struct {
 	Status bool   `json:"status"`
 	Cause  string `json:"cause"`
 	Advice string `json:"advice"`
 }
 
-func AuditOneSubmission(c *gin.Context) {
+func AuditOne(c *gin.Context) {
 	// 审批单个申报
 	c.Header("Content-Type", "application/json")
 
 	const DatabaseName string = ""
 	const CollectionName string = "" //submission
-	var information auditOneSubmissionInformation
+	var information auditOneInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
 		utils.ResponseError(c, "failure", "Parameter wrong")
@@ -84,7 +84,7 @@ func AuditOneSubmission(c *gin.Context) {
 	return
 }
 
-type auditManySubmissionInformation struct {
+type auditManyInformation struct {
 	SubmissionIds []string `json:"submissionIds"`
 	Status        bool     `json:"status"`
 	Advice        string   `json:"advice"`
@@ -102,7 +102,7 @@ func AuditManySubmission(c *gin.Context) {
 
 	const DatabaseName string = ""
 	const CollectionName string = "" //submission
-	var information auditManySubmissionInformation
+	var information auditManyInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
 		utils.ResponseError(c, "failure", "Parameter wrong")
