@@ -42,7 +42,7 @@ func ModifiedProfileHandler(c *gin.Context) {
 		return
 	}
 	currentUser := service.GetCurrentUser(c)
-	newToken, err := midware.GenerateNewToken(currentUser)
+	newToken, err := midware.GenerateToken(currentUser)
 	if err != nil {
 		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return

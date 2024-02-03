@@ -35,7 +35,7 @@ func Init(r *gin.Engine) {
 	student := r.Group(preStudent)
 	{
 		student.Use(func(c *gin.Context) {
-			midware.AuthenticateMiddleware(c, "counsellor", "student")
+			midware.JWTAuthMiddleware()
 			if !c.IsAborted() {
 				c.Next()
 			}
@@ -57,7 +57,7 @@ func Init(r *gin.Engine) {
 	counsellor := r.Group(preCounsellor)
 	{
 		counsellor.Use(func(c *gin.Context) {
-			midware.AuthenticateMiddleware(c, "counsellor")
+			midware.JWTAuthMiddleware()
 			if !c.IsAborted() {
 				c.Next()
 			}
@@ -81,7 +81,7 @@ func Init(r *gin.Engine) {
 	square := r.Group(preSquare)
 	{
 		square.Use(func(c *gin.Context) {
-			midware.AuthenticateMiddleware(c, "counsellor", "student")
+			midware.JWTAuthMiddleware()
 			if !c.IsAborted() {
 				c.Next()
 			}
