@@ -2,15 +2,12 @@ package counsellor
 
 import (
 	"context"
-	"fmt"
+	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
-	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -24,23 +21,20 @@ func AuditOne(c *gin.Context) {
 	// 审批单个申报
 	c.Header("Content-Type", "application/json")
 
+	// 获取用户信息
+	currentUser := service.GetCurrentUser(c)
 	const DatabaseName string = ""
 	const CollectionName string = "" //submission
+
 	var information auditOneInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		utils.ResponseError(c, "failure", "Parameter wrong")
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	submissionId := c.Param("submissionId")
+
 	// 从上下文中获取mongo客户端
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database("DatabaseName")
-	collection := database.Collection("CollectionName")
 	filter := bson.M{
 		"submissionId": submissionId,
 	}
@@ -51,23 +45,7 @@ func AuditOne(c *gin.Context) {
 			"advice": information.Advice,
 		},
 	}
-	_, err = collection.UpdateOne(context.TODO(), filter, modified)
-	if err != nil {
-		//处理逻辑
-		if err == mongo.ErrNoDocuments {
-			fmt.Println("No matching document found")
-			return
-		}
-		log.Fatal(err)
-		return
-	}
-	// 获取用户信息
-	user, ok := c.Get("currentUser")
-	currentUser, ok := user.(models.CurrentUser)
-	if !ok {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	_ = service.UpdateOne(c, DatabaseName, CollectionName, filter, modified)
 	// 新建历史记录
 	newHistory := models.SubmitHistory{
 		SubmissionId: submissionId,
@@ -76,10 +54,7 @@ func AuditOne(c *gin.Context) {
 		Cause:        information.Cause,
 		Advice:       information.Advice,
 	}
-	_, err = collection.InsertOne(context.Background(), newHistory)
-	if err != nil {
-		log.Fatal(err)
-	}
+	_ = service.InsertOne(c, DatabaseName, CollectionName, newHistory)
 	utils.ResponseSuccess(c, nil)
 	return
 }
@@ -91,31 +66,19 @@ type auditManyInformation struct {
 	Cause         string   `json:"cause"`
 }
 
-type auditManyResponse struct {
-	SuccessCount int    `json:"successCount"`
-	FailureCount int    `json:"failureCount"`
-	Error        string `json:"error,omitempty"`
-}
-
 func AuditManySubmission(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-
+	// 获取用户信息
+	currentUser := service.GetCurrentUser(c)
 	const DatabaseName string = ""
 	const CollectionName string = "" //submission
 	var information auditManyInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		utils.ResponseError(c, "failure", "Parameter wrong")
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	// 从上下文中获取mongo客户端
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database("DatabaseName")
-	collection := database.Collection("CollectionName")
 	filter := bson.M{
 		"_id": bson.M{
 			"$in": information.SubmissionIds,
@@ -128,23 +91,7 @@ func AuditManySubmission(c *gin.Context) {
 			"advice": information.Advice,
 		},
 	}
-	_, err = collection.UpdateMany(context.TODO(), filter, modified)
-	if err != nil {
-		//处理逻辑
-		if err == mongo.ErrNoDocuments {
-			fmt.Println("No matching document found")
-			return
-		}
-		log.Fatal(err)
-		return
-	}
-	// 获取用户信息
-	user, ok := c.Get("currentUser")
-	currentUser, ok := user.(models.CurrentUser)
-	if !ok {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	_ = service.UpdateMany(c, DatabaseName, CollectionName, filter, modified)
 	// 记录历史申报
 	baseSubmission := models.SubmitHistory{
 		AuditorId: currentUser.UserId,
@@ -153,30 +100,14 @@ func AuditManySubmission(c *gin.Context) {
 		Advice:    information.Advice,
 	}
 	var submissions []interface{}
-	var successCount, failureCount int
-	var errorMessage string
 	for _, submissionId := range information.SubmissionIds {
 		doc := baseSubmission
 		doc.SubmissionId = submissionId
 		submissions = append(submissions, doc)
 	}
 
-	insertResult, err := collection.InsertMany(context.TODO(), submissions)
-	if err != nil {
-		errorMessage = err.Error()
-		log.Println("Insert error:", err)
-	} else {
-		// 计算成功和失败的个数
-		successCount = len(insertResult.InsertedIDs)
-		failureCount = len(information.SubmissionIds) - successCount
-	}
-	// 生成相应结构体
-	response := auditManyResponse{
-		SuccessCount: successCount,
-		FailureCount: failureCount,
-		Error:        errorMessage,
-	}
-	utils.ResponseSuccess(c, response)
+	_ = service.InsertMany(c, DatabaseName, CollectionName, submissions)
+	utils.ResponseSuccess(c, nil)
 }
 
 type getAuditlist struct {
@@ -190,29 +121,18 @@ func GetAuditHistory(c *gin.Context) {
 	const DatabaseName string = ""
 	const CollectionName string = "" //student
 
-	err := c.ShouldBindJSON(&information)
-	if err != nil {
-		utils.ResponseError(c, "Paramter", "ParameterErrorMsg")
+	if err := c.ShouldBindJSON(&information); err != nil {
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-	// 获取collection
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database(DatabaseName)
-	collection := database.Collection(CollectionName)
+
 	filter := bson.D{}
 	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((information.Index - 1) * information.PaginationSize).SetLimit(information.PaginationSize)
-	result, err := collection.Find(context.TODO(), filter, options)
-	if err != nil {
-		// 处理逻辑
-		return
-	}
+	result := service.Find(c, DatabaseName, CollectionName, filter, options)
+
 	var list []models.SubmitHistory
-	if err = result.All(context.TODO(), &list); err != nil {
-		// TODO: handle
+	if err := result.All(context.TODO(), &list); err != nil {
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	utils.ResponseSuccess(c, list)

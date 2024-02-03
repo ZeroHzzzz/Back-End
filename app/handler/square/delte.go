@@ -1,72 +1,39 @@
 package square
 
 import (
-	"context"
+	"hr/app/service"
 	"hr/app/utils"
-	"hr/configs/models"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func DeleteTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	topicId := c.Param("topicId")
 	// 从上下文中获取用户信息
-	currentUser, ok := c.Get("CurrentUser")
-	if !ok {
-		// TODO:
-		return
-	}
-	user, ok := currentUser.(models.CurrentUser)
-	if !ok {
-		// TODO:
-		return
-	}
-	// 从上下文中获取mongo客户端
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	// 要改
-	database := mongoClient.Database("Form")
-	collection := database.Collection("Submission")
-	var err error
+	currentUser := service.GetCurrentUser(c)
 	// 辅导员拥有删除文章的能力
-	if user.Role == "counsellor" {
+	if currentUser.Role == "counsellor" {
 		filter := bson.M{
 			"_id": topicId,
 		}
-		_, err = collection.DeleteOne(context.TODO(), filter)
+		_ = service.DeleteOne(c, "", "", filter)
 		// 删除评论
 
-	} else if user.Role == "student" {
+	} else if currentUser.Role == "student" {
 		filter := bson.M{
 			"_id":      topicId,
-			"autherID": user.UserId,
+			"autherID": currentUser.UserId,
 		}
-		_, err = collection.DeleteOne(context.TODO(), filter)
+		_ = service.DeleteOne(c, "", "", filter)
 
 	}
-	if err != nil {
-		// TODO:
-		return
-	}
 	// 要改
-	database = mongoClient.Database("Form")
-	collection = database.Collection("Submission")
 	filter := bson.M{
 		"topicId": topicId,
 	}
-	_, err = collection.DeleteMany(context.TODO(), filter)
-	// 这里要注意有可能这个文章没有评论
-	if err != nil {
-		// TODO
-		return
-	}
+	_ = service.DeleteMany(c, "", "", filter)
 	utils.ResponseSuccess(c, nil)
 }
 
@@ -79,29 +46,15 @@ func DeleteReply(c *gin.Context) {
 	replyID := c.Param("replyID")
 
 	// 从上下文中获取mongo客户端
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	// 要改
-	database := mongoClient.Database("Form")
-	collection := database.Collection("Submission")
+
 	filter := bson.M{
 		"replyID": replyID,
 	}
-	_, err := collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		// TODO:
-		return
-	}
+	_ = service.DeleteOne(c, "", "", filter)
+
 	filter = bson.M{
 		"parentID": replyID,
 	}
-	_, err = collection.DeleteMany(context.TODO(), filter)
-	if err != nil {
-		//
-		return
-	}
+	_ = service.DeleteMany(c, "", "", filter)
 	utils.ResponseSuccess(c, nil)
 }

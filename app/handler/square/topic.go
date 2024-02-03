@@ -2,16 +2,13 @@ package square
 
 import (
 	"context"
-	"fmt"
+	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
-	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -25,32 +22,18 @@ type CreateTopicInformation struct {
 func NewTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
-	const DatabaseName string = ""
-	const CollectionName string = "" //student
-
 	var topicInformation CreateTopicInformation
 	err := c.ShouldBindJSON(&topicInformation)
 	if err != nil {
-		utils.ResponseError(c, "Paramter", "ParameterErrorMsg")
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database(DatabaseName)
-	collection := database.Collection(CollectionName)
 	newTopic := models.Topic{
 		Title:    topicInformation.Title,
 		Content:  topicInformation.Content,
 		AutherID: topicInformation.UserId,
 	}
-	insertResult, err := collection.InsertOne(context.TODO(), newTopic)
-	if err != nil {
-		log.Println("Insert error:", err)
-		return
-	}
+	insertResult := service.InsertOne(c, "", "", newTopic)
 	utils.ResponseSuccess(c, insertResult.InsertedID)
 	return
 }
@@ -59,38 +42,24 @@ func NewTopic(c *gin.Context) {
 func GetTopicList(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
-	const DatabaseName string = ""
-	const CollectionName string = ""
 	pageParam := c.Query("page")
 	page, err := strconv.Atoi(pageParam)
 	if err != nil {
-		// TODO
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	limitParam := c.Query("limit")
 	limit, err := strconv.Atoi(limitParam)
 	if err != nil {
-		// TODO
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-	// 获取collection
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database(DatabaseName)
-	collection := database.Collection(CollectionName)
 	filter := bson.D{}
 	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((int64(page) - 1) * int64(limit)).SetLimit(int64(limit))
-	result, err := collection.Find(context.TODO(), filter, options)
-	if err != nil {
-		// 处理逻辑
-		return
-	}
+	result := service.Find(c, "", "", filter, options)
 	var list []models.SubmitHistory
 	if err = result.All(context.TODO(), &list); err != nil {
-		// TODO: handle
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	utils.ResponseSuccess(c, list)
@@ -104,28 +73,13 @@ func GetTopic(c *gin.Context) {
 	topicId := c.Param("topicId")
 
 	// 获取collection
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	const DatabaseName string = ""
-	const CollectionName string = ""
-	database := mongoClient.Database(DatabaseName)
-	collection := database.Collection(CollectionName)
-
 	filter := bson.M{
 		"_id": topicId,
 	}
 	var topic models.Topic
-	err := collection.FindOne(context.TODO(), filter).Decode(&topic)
+	err := service.FindOne(c, "", "", filter).Decode(&topic)
 	if err != nil {
-		//处理逻辑
-		if err == mongo.ErrNoDocuments {
-			fmt.Println("No matching document found")
-			return
-		}
-		log.Fatal(err)
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 
@@ -142,28 +96,14 @@ func ModifiedTopic(c *gin.Context) {
 	var information ModifiedTopicInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		// TODO
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	topicId := c.Param("topicId")
 
 	// 从上下文中获取currentUser
-	user, ok := c.Get("currentUser")
-	currentUser, ok := user.(models.CurrentUser)
-	if !ok {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	currentUser := service.GetCurrentUser(c)
 
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	const DatabaseName string = ""
-	const CollectionName string = ""
-	database := mongoClient.Database(DatabaseName)
-	collection := database.Collection(CollectionName)
 	// 如果通过文章的id和修改人的id进行查找，如果找不到，说明修改人不是原作者，不允许修改
 	filter := bson.M{
 		"topicId": topicId,
@@ -174,10 +114,7 @@ func ModifiedTopic(c *gin.Context) {
 			"content": information.Context,
 		},
 	}
-	_, err = collection.UpdateOne(context.TODO(), filter, modified)
-	if err != nil {
-		//TODO
-		return
-	}
+	_ = service.UpdateOne(c, "", "", filter, modified)
+
 	utils.ResponseSuccess(c, nil)
 }

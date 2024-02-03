@@ -2,13 +2,12 @@ package counsellor
 
 import (
 	"context"
+	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -27,19 +26,13 @@ func GetSubmissionList(c *gin.Context) {
 	var getsubmissionlistinformation getSubmissionListInformation
 	err := c.ShouldBindJSON(&getsubmissionlistinformation)
 	if err != nil {
-		utils.ResponseError(c, "Paramter", "ParameterErrorMsg")
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 
 	// 获取collection
 	var list []models.SubmitInformation
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database(DatabaseName)
-	collection := database.Collection(CollectionName)
+
 	// 这里可能会有bug，因为这里是嵌套字段，不知道能不能直接查出来
 	// 获取未审核表单
 	filter := bson.M{
@@ -51,15 +44,11 @@ func GetSubmissionList(c *gin.Context) {
 	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((getsubmissionlistinformation.Index - 1) * getsubmissionlistinformation.PaginationSize).SetLimit(getsubmissionlistinformation.PaginationSize)
 
 	// 执行查询
-	cursor, err := collection.Find(context.TODO(), filter, options)
-	if err != nil {
-		// 处理
-		return
-	}
+	cursor := service.Find(c, DatabaseName, CollectionName, filter, options)
 	if err := cursor.All(context.TODO(), &list); err != nil {
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-
 	utils.ResponseSuccess(c, list)
 	return
 }
@@ -72,21 +61,13 @@ func GetSubmission(c *gin.Context) {
 
 	submissionId := c.Param("submissionId")
 
-	// 从上下文中获取mongo客户端
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database("DatabaseName")
-	collection := database.Collection("CollectionName")
 	filter := bson.M{"submissionId": submissionId}
-	result := collection.FindOne(c, filter)
+	result := service.FindOne(c, DatabaseName, CollectionName, filter)
 
 	var submission models.SubmitInformation
 	err := result.Decode(&submission)
 	if err != nil {
-		// 处理
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	utils.ResponseSuccess(c, submission)

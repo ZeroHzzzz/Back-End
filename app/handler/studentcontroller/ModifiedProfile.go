@@ -1,17 +1,12 @@
 package studentcontroller
 
 import (
-	"context"
-	"fmt"
 	"hr/app/midware"
+	"hr/app/service"
 	"hr/app/utils"
-	"hr/configs/models"
-	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type modifiedprofileInformation struct {
@@ -22,27 +17,14 @@ type modifiedprofileInformation struct {
 func ModifiedProfileHandler(c *gin.Context) {
 	//修改密码后token行为可能需要深入考虑
 	c.Header("Content-Type", "application/json")
-
-	const DatabaseName string = ""
-	const CollectionName string = "" //student
-
 	var modifiedprofileinformation modifiedprofileInformation
 	err := c.ShouldBindJSON(&modifiedprofileinformation)
 	if err != nil {
-		utils.ResponseError(c, "failure", "Parameter wrong")
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 
 	userid := c.Param("userId")
-
-	// 从上下文中获取mongo客户端
-	mongoClient, exists := c.Request.Context().Value("mongoClient").(*mongo.Client)
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "MongoDB client not found in context"})
-		return
-	}
-	database := mongoClient.Database("DatabaseName")
-	collection := database.Collection("CollectionName")
 
 	filter := bson.M{
 		"userId":   userid,
@@ -54,31 +36,17 @@ func ModifiedProfileHandler(c *gin.Context) {
 		},
 	}
 	// 修改之后的文档
-	_, err = collection.UpdateOne(context.TODO(), filter, modified)
+	_ = service.UpdateOne(c, "", "", filter, modified)
 	if err != nil {
-		//处理逻辑
-		if err == mongo.ErrNoDocuments {
-			fmt.Println("No matching document found")
-			return
-		}
-		log.Fatal(err)
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-	// 从上下文中获取currentUser
-	user, ok := c.Get("currentUser")
-	currentUser, ok := user.(models.CurrentUser)
-	if !ok {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	currentUser := service.GetCurrentUser(c)
 	newToken, err := midware.GenerateNewToken(currentUser)
 	if err != nil {
-		//
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
 	// 生成新token
 	utils.ResponseSuccess(c, newToken)
-	return
-	// update := bson.M{"$set": bson.M{}}
-
 }
