@@ -66,7 +66,7 @@ func ParseToken(tokenString string) (*Claims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func JWTAuthMiddleware() gin.HandlerFunc {
+func JWTAuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("authorization")
 		if authHeader == "" {
@@ -96,6 +96,20 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		// 检查用户的角色是否在允许的角色列表中
+		roleAllowed := false
+		for _, allowedRole := range allowedRoles {
+			if mc.CurrentUser.Role == allowedRole {
+				roleAllowed = true
+				break
+			}
+		}
+		if !roleAllowed {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
 		// 将当前请求的username信息保存到请求的上下文c上
 		c.Set("CurrentUser", mc.CurrentUser)
 		c.Next() // 后续的处理函数可以用过c.Get("username")来获取当前请求的用户信息
