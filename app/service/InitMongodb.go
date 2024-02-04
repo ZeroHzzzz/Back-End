@@ -1,4 +1,4 @@
-package utils
+package service
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 const (
 	MongoDBHost     = "localhost"
 	MongoDBPort     = 27017
-	MongoDBDatabase = "your_database_name"
+	MongoDBPassword = "password" // 这里没有配置密码，很有可能出问题
 )
 
 // 初始化 MongoDB 客户端

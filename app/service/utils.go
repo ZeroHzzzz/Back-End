@@ -30,6 +30,10 @@ func GetmongoClient(c *gin.Context) *mongo.Client {
 	return mongoClient
 }
 
+// func GetRedisClint(c *gin.Context) *redis.Client {
+
+// }
+
 // Update
 func UpdateOne(c *gin.Context, databaseName, collectionName string, filter, modified interface{}) *mongo.UpdateResult {
 	mongoClient := GetmongoClient(c)
