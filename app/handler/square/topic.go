@@ -82,7 +82,19 @@ func GetTopic(c *gin.Context) {
 		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-
+	// // 更新浏览量
+	// redisClient := service.GetRedisClint(c)
+	// view := service.GetTopicViews(c, topicId)
+	// redisClient.Set(context.Background(), topicId, view, 0)
+	filter = bson.M{
+		"_id": topicId,
+	}
+	modified := bson.M{
+		"$inc": bson.M{
+			"views": 1,
+		},
+	}
+	_ = service.UpdateOne(c, "", "", filter, modified)
 	utils.ResponseSuccess(c, topic)
 	return
 }

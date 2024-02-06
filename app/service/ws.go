@@ -56,13 +56,17 @@ func HandleWebSocketConnection(c *gin.Context, userId string) {
 		// 声明一个消费者并进行监听
 		msgs := ConsumeMessage(c, userId)
 		r := GetRabbitMQMiddle(c)
-		for msg := range msgs {
-			SendMessageToClient(userId, msg.Body)
-			err := r.Channel.Ack(msg.DeliveryTag, false)
-			if err != nil {
-				log.Printf("Failed to acknowledge message: %v\n", err)
+
+		go func() {
+			for msg := range msgs {
+				SendMessageToClient(userId, msg.Body)
+				err := r.Channel.Ack(msg.DeliveryTag, false)
+				if err != nil {
+					log.Printf("Failed to acknowledge message: %v\n", err)
+				}
 			}
-		}
+		}()
+
 	}
 }
 

@@ -2,25 +2,68 @@ package midware
 
 import (
 	"context"
-	"hr/app/service"
+	"fmt"
+	"log"
+	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+const (
+	MongoDBHost     = "localhost"
+	MongoDBPort     = 27017
+	MongoDBPassword = "password" // 这里没有配置密码，很有可能出问题
 )
 
 func mongoClientMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 初始化 MongoDB 客户端
-		client := service.InitMongoClient(c)
+		// 设置 MongoDB 连接配置
+		clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", MongoDBHost, MongoDBPort)).SetConnectTimeout(10 * time.Second)
+
+		// 连接 MongoDB
+		client, err := mongo.Connect(context.Background(), clientOptions)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
+			c.Abort()
+		}
+		defer CloseMongoClient(client)
+		// 设置最大连接池大小
+		clientOptions.SetMaxPoolSize(10)
+
+		// 创建 MongoDB 连接上下文
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel() // 这里会出问题的，应该放在handler里面而不是放在函数内部
+
+		// 检查连接
+		err = client.Ping(ctx, nil)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
+			c.Abort()
+		}
+
+		fmt.Println("Connected to MongoDB!")
 
 		// 将 MongoDB 客户端添加到请求的上下文中
-		ctx := context.WithValue(c.Request.Context(), "mongoClient", client)
+		ctx = context.WithValue(c.Request.Context(), "mongoClient", client)
 
 		// 设置上下文为新的带有 MongoDB 客户端的上下文
 		c.Request = c.Request.WithContext(ctx)
 
 		// 调用下一个处理程序，最后回到中间件
 		c.Next()
+	}
+}
 
-		service.CloseMongoClient(client)
+func CloseMongoClient(client *mongo.Client) {
+	if client != nil {
+		err := client.Disconnect(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("MongoDB connection closed.")
 	}
 }
