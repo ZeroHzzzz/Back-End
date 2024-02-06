@@ -12,9 +12,10 @@ import (
 )
 
 type auditOneInformation struct {
-	Status bool   `json:"status"`
-	Cause  string `json:"cause"`
-	Advice string `json:"advice"`
+	AuthorId string `json:"authorID"`
+	Status   bool   `json:"status"`
+	Cause    string `json:"cause"`
+	Advice   string `json:"advice"`
 }
 
 func AuditOne(c *gin.Context) {
@@ -32,8 +33,8 @@ func AuditOne(c *gin.Context) {
 		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-	submissionId := c.Param("submissionId")
 
+	submissionId := c.Param("submissionId")
 	// 从上下文中获取mongo客户端
 	filter := bson.M{
 		"submissionId": submissionId,
@@ -55,12 +56,29 @@ func AuditOne(c *gin.Context) {
 		Advice:       information.Advice,
 	}
 	_ = service.InsertOne(c, DatabaseName, CollectionName, newHistory)
+
+	// var submission models.SubmitInformation
+	// cursor := service.FindOne(c, "", "", filter)
+	// err = cursor.Decode(&submission)
+	// if err != nil {
+	// 	c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+	// 	return
+	// }
+
+	// 发送通知
+	if information.Status {
+		service.PublishMessage(c, "", information.AuthorId, utils.SubmissionAccepted)
+	} else {
+		service.PublishMessage(c, "", information.AuthorId, currentUser.UserName+utils.SubmissionRejected)
+	}
+
 	utils.ResponseSuccess(c, nil)
 	return
 }
 
 type auditManyInformation struct {
-	SubmissionIds []string `json:"submissionIds"`
+	SubmissionIds []string `json:"submissionIDs"`
+	AuthorIds     []string `json:"authorIDs"`
 	Status        bool     `json:"status"`
 	Advice        string   `json:"advice"`
 	Cause         string   `json:"cause"`
@@ -105,8 +123,15 @@ func AuditManySubmission(c *gin.Context) {
 		doc.SubmissionId = submissionId
 		submissions = append(submissions, doc)
 	}
-
 	_ = service.InsertMany(c, DatabaseName, CollectionName, submissions)
+	// 可能有插入不成功的情况
+	for _, authorId := range information.AuthorIds {
+		if information.Status {
+			service.PublishMessage(c, "", authorId, utils.SubmissionAccepted)
+		} else {
+			service.PublishMessage(c, "", authorId, utils.SubmissionRejected) // 要改
+		}
+	}
 	utils.ResponseSuccess(c, nil)
 }
 

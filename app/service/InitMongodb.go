@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,14 +19,16 @@ const (
 )
 
 // 初始化 MongoDB 客户端
-func InitMongoClient() (*mongo.Client, error) {
+func InitMongoClient(c *gin.Context) *mongo.Client {
 	// 设置 MongoDB 连接配置
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", MongoDBHost, MongoDBPort)).SetConnectTimeout(10 * time.Second)
 
 	// 连接 MongoDB
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
-		return nil, err
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
+		c.Abort()
+		return nil
 	}
 
 	// 设置最大连接池大小
@@ -37,11 +41,12 @@ func InitMongoClient() (*mongo.Client, error) {
 	// 检查连接
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, err
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
+		c.Abort()
+		return nil
 	}
-
 	fmt.Println("Connected to MongoDB!")
-	return client, nil
+	return client
 }
 
 func CloseMongoClient(client *mongo.Client) {

@@ -9,6 +9,7 @@ import (
 
 func main() {
 	// database.Init()
+	// 考虑写一个数据库初始化的，比如声明一个交换机
 	r := gin.Default()
 	router.Init(r)
 	err := r.Run(":3000")

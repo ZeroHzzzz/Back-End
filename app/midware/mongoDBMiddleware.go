@@ -3,7 +3,6 @@ package midware
 import (
 	"context"
 	"hr/app/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,12 +10,7 @@ import (
 func mongoClientMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 初始化 MongoDB 客户端
-		client, err := service.InitMongoClient()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
-			c.Abort()
-			return
-		}
+		client := service.InitMongoClient(c)
 
 		// 将 MongoDB 客户端添加到请求的上下文中
 		ctx := context.WithValue(c.Request.Context(), "mongoClient", client)

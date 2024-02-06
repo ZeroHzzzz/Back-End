@@ -40,6 +40,7 @@ func NewReply(c *gin.Context) {
 		AutherId: currentUser.UserId,
 	}
 	_ = service.InsertOne(c, "", "", newReply)
+	service.PublishMessage(c, "", information.ParentId, utils.Reply2you) // 发布信息
 	utils.ResponseSuccess(c, nil)
 }
 
