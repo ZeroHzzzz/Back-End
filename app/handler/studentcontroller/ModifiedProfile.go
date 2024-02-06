@@ -44,6 +44,8 @@ func ModifiedProfileHandler(c *gin.Context) {
 		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
+	// 发信
+	service.PublishMessage(c, utils.UserExchange, currentUser.UserId, utils.ModifiedProfile)
 	// 生成新token
 	utils.ResponseSuccess(c, newToken)
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"hr/app/utils"
 	"hr/configs/models"
 
 	"github.com/gin-gonic/gin"
@@ -26,10 +27,17 @@ func Initrmq(c *gin.Context) *models.RabbitMQMiddleware {
 		c.Error(err)
 		c.Abort()
 	}
+	// 声明交换机
+	// 用户信息交换机
+	DeclareExchange(c, utils.UserExchange, "direct")
+	// 全局信息交换机
+	DeclareExchange(c, utils.GlobalExchange, "fanout")
+
 	return &models.RabbitMQMiddleware{
 		Connection: conn,
 		Channel:    ch,
 	}
+
 }
 
 func Closermq(r *models.RabbitMQMiddleware) {

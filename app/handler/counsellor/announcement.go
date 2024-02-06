@@ -31,8 +31,7 @@ func SetAnnouncement(c *gin.Context) {
 		Content:  information.Content,
 	}
 	_ = service.InsertOne(c, "", "", newAnnouncement)
-	service.DeclareExchange(c, "")
-	service.PublishMessage(c, "", "", information.Content) // 发布信息 用扇out交换机
+	service.PublishMessage(c, utils.GlobalExchange, "", currentUser.UserName+utils.Announcement+": "+information.Content) // 发布信息 用扇out交换机
 	utils.ResponseSuccess(c, nil)
 	return
 }

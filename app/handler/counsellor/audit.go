@@ -67,9 +67,9 @@ func AuditOne(c *gin.Context) {
 
 	// 发送通知
 	if information.Status {
-		service.PublishMessage(c, "", information.AuthorId, utils.SubmissionAccepted)
+		service.PublishMessage(c, utils.UserExchange, information.AuthorId, utils.SubmissionAccepted)
 	} else {
-		service.PublishMessage(c, "", information.AuthorId, currentUser.UserName+utils.SubmissionRejected)
+		service.PublishMessage(c, utils.UserExchange, information.AuthorId, currentUser.UserName+utils.SubmissionRejected)
 	}
 
 	utils.ResponseSuccess(c, nil)
@@ -96,7 +96,8 @@ func AuditManySubmission(c *gin.Context) {
 		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
 		return
 	}
-	// 从上下文中获取mongo客户端
+	// 批量更新状态
+	var successList []models.SubmitInformation
 	filter := bson.M{
 		"_id": bson.M{
 			"$in": information.SubmissionIds,
@@ -109,7 +110,27 @@ func AuditManySubmission(c *gin.Context) {
 			"advice": information.Advice,
 		},
 	}
-	_ = service.UpdateMany(c, DatabaseName, CollectionName, filter, modified)
+	updateResult := service.UpdateMany(c, DatabaseName, CollectionName, filter, modified)
+
+	// 发信
+	fliter := bson.M{
+		"_id": bson.M{
+			"$in": updateResult.UpsertedID,
+		},
+	}
+	cursor := service.Find(c, "", "", fliter) //在submission中找
+	if err := cursor.All(context.TODO(), &successList); err != nil {
+		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		return
+	}
+	for _, successUser := range successList {
+		if information.Status {
+			service.PublishMessage(c, utils.UserExchange, successUser.UserId, utils.SubmissionAccepted)
+		} else {
+			service.PublishMessage(c, utils.UserExchange, successUser.UserId, currentUser.UserName+utils.SubmissionAccepted)
+		}
+	}
+
 	// 记录历史申报
 	baseSubmission := models.SubmitHistory{
 		AuditorId: currentUser.UserId,
@@ -124,14 +145,6 @@ func AuditManySubmission(c *gin.Context) {
 		submissions = append(submissions, doc)
 	}
 	_ = service.InsertMany(c, DatabaseName, CollectionName, submissions)
-	// 可能有插入不成功的情况
-	for _, authorId := range information.AuthorIds {
-		if information.Status {
-			service.PublishMessage(c, "", authorId, utils.SubmissionAccepted)
-		} else {
-			service.PublishMessage(c, "", authorId, utils.SubmissionRejected) // 要改
-		}
-	}
 	utils.ResponseSuccess(c, nil)
 }
 

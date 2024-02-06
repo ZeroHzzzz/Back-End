@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hr/app/utils"
 	"hr/configs/models"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -169,12 +170,12 @@ func DeclareQueue(c *gin.Context, queueName string) amqp.Queue {
 	return q
 }
 
-func DeclareExchange(c *gin.Context, exchangeName string) {
+func DeclareExchange(c *gin.Context, exchangeName, kind string) {
 	// 声明交换机
 	r := GetRabbitMQMiddle(c)
 	err := r.Channel.ExchangeDeclare(
 		exchangeName,
-		"direct",
+		kind,
 		true,
 		false,
 		false,
@@ -204,6 +205,21 @@ func PublishMessage(c *gin.Context, exchangeName, queueName, message string) {
 	if err != nil {
 		c.Error(err)
 		c.Abort()
+	}
+}
+
+func BindQueue(c *gin.Context, queueName, routeKey, exchangeName string) {
+	r := GetRabbitMQMiddle(c)
+	err := r.Channel.QueueBind(
+		queueName,
+		routeKey,
+		exchangeName,
+		false,
+		nil,
+	)
+	if err != nil {
+		//TODO:
+		log.Fatalf("Failed to bind a queue to the exchange: %v", err)
 	}
 }
 
