@@ -12,10 +12,13 @@ import (
 )
 
 type auditOneInformation struct {
-	AuthorId string `json:"authorID"`
-	Status   bool   `json:"status"`
-	Cause    string `json:"cause"`
-	Advice   string `json:"advice"`
+	AuthorId     string `json:"authorID"` // 这里指的是提交人的id
+	AcademicYear string `json:"academicYear"`
+	ItemName     string `json:"itemName"`
+	ItemValue    int64  `json:"itemValue"`
+	Status       bool   `json:"status"`
+	Cause        string `json:"cause"`
+	Advice       string `json:"advice"`
 }
 
 func AuditOne(c *gin.Context) {
@@ -47,6 +50,19 @@ func AuditOne(c *gin.Context) {
 		},
 	}
 	_ = service.UpdateOne(c, DatabaseName, CollectionName, filter, modified)
+	// 加分
+	if information.Status {
+		filter = bson.M{
+			"_id":          information.AuthorId,
+			"academicYear": information.AcademicYear,
+			"itemName":     information.ItemName,
+		}
+		modified = bson.M{
+			"$inc": bson.M{
+				"grade": information.ItemValue,
+			},
+		}
+	}
 	// 新建历史记录
 	newHistory := models.SubmitHistory{
 		SubmissionId: submissionId,
@@ -56,14 +72,6 @@ func AuditOne(c *gin.Context) {
 		Advice:       information.Advice,
 	}
 	_ = service.InsertOne(c, DatabaseName, CollectionName, newHistory)
-
-	// var submission models.SubmitInformation
-	// cursor := service.FindOne(c, "", "", filter)
-	// err = cursor.Decode(&submission)
-	// if err != nil {
-	// 	c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
-	// 	return
-	// }
 
 	// 发送通知
 	if information.Status {
@@ -79,6 +87,9 @@ func AuditOne(c *gin.Context) {
 type auditManyInformation struct {
 	SubmissionIds []string `json:"submissionIDs"`
 	AuthorIds     []string `json:"authorIDs"`
+	AcademicYear  string   `json:"academicYear"`
+	ItemName      string   `json:"itemName"`
+	ItemValue     int64    `json:"itemValue"`
 	Status        bool     `json:"status"`
 	Advice        string   `json:"advice"`
 	Cause         string   `json:"cause"`
@@ -125,6 +136,18 @@ func AuditManySubmission(c *gin.Context) {
 	}
 	for _, successUser := range successList {
 		if information.Status {
+			// 加分
+			fliter = bson.M{
+				"_id":          successUser.UserId,
+				"academicYear": information.AcademicYear,
+				"itemName":     information.ItemName,
+			}
+			modified = bson.M{
+				"$inc": bson.M{
+					"grade": information.ItemValue,
+				},
+			}
+			_ = service.UpdateMany(c, "", "", fliter, modified)
 			service.PublishMessage(c, utils.UserExchange, successUser.UserId, utils.SubmissionAccepted)
 		} else {
 			service.PublishMessage(c, utils.UserExchange, successUser.UserId, currentUser.UserName+utils.SubmissionAccepted)

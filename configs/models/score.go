@@ -64,35 +64,11 @@
 //	}
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type Score struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty"` //文档id
-	UserId       string             `bson:"userId"`
-	AcademicYear string             `bson:"academicYear"`
+	UserId       string `bson:"_id"`
+	AcademicYear string `bson:"academicYear"`
+	ItemName     string `bson:"itemName"`
+	Grade        string `bson:"grade"`
 }
 
-// D1           int                `bson:"基本评定分"`
-// 	D2           int                `bson:"记实加减分"`
-// 	D2_1         int                `bson:"集体评定等级分"`
-// 	D2_2         int                `bson:"社会责任记实分"`
-// 	D2_3         int                `bson:"思政学习加减分"`
-// 	D2_4         int                `bson:"违纪违规扣分"`
-// 	D2_5         int                `bson:"学生荣誉称号加减分"`
-// 	T1           int                `bson:"体育课程成绩"`
-// 	T2           int                `bson:"课外体育活动成绩"`
-// 	T2_1         int                `bson:"体育竞赛获奖得分"`
-// 	T2_2         int                `bson:"早锻炼得分"`
-// 	M1           int                `bson:"文化艺术实践成绩"`
-// 	M2           int                `bson:"文化艺术竞赛获奖得分"`
-// 	L1           int                `bson:"寝室日常考核基本分"`
-// 	L1_1         int                `bson:"寝室日常考核基本分"`
-// 	L1_2         int                `bson:"“文明寝室”创建、寝室风采展等活动加分"`
-// 	L1_3         int                `bson:"寝室行为表现与卫生状况加减分"`
-// 	L2           int                `bson:"志愿服务分"`
-// 	L3           int                `bson:"实习实训"`
-// 	C1           int                `bson:"创新创业成绩"`
-// 	C1_1         int                `bson:"创新创业竞赛获奖得分"`
-// 	C1_2         int                `bson:"水平等级考试"`
-// 	C2           int                `bson:"社会实践活动"`
-// 	C3           int                `bson:"社会工作"`
+// 修改一下，修改成一个用户，然后有很多个文档，然后每个文档有两个数据，一个是itemName一个是grade

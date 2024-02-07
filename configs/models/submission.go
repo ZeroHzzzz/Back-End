@@ -9,6 +9,7 @@ import (
 type SubmitInformation struct {
 	CurrentUser
 	ItemName     string   `bson:"itemName"`
+	ItemValue    int64    `bson:"itemValue"`
 	AcademicYear string   `bson:"academicYear"`
 	Evidence     []string `bson:"evidence"`
 	Status       bool     `bson:"status"`
