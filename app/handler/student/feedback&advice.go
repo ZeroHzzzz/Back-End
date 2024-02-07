@@ -19,7 +19,8 @@ func Feedback(c *gin.Context) {
 	var information information
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	newFeeback := models.Feedback{
@@ -37,7 +38,8 @@ func Advice(c *gin.Context) {
 	var information information
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	newFeeback := models.Feedback{

@@ -3,7 +3,7 @@ package midware
 import (
 	"context"
 	"fmt"
-	"net/http"
+	"hr/app/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -25,8 +25,9 @@ func redisClientMiddleware() gin.HandlerFunc {
 		defer client.Close()
 
 		if err := client.Ping(context.Background()).Err(); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
+			c.Error(utils.GetError(utils.CONNECT_ERROR, err.Error()))
 			c.Abort()
+			return
 		}
 		ctx := context.WithValue(c.Request.Context(), "redisClient", client)
 		c.Request = c.Request.WithContext(ctx)

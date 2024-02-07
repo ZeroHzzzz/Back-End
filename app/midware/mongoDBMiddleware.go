@@ -3,8 +3,8 @@ package midware
 import (
 	"context"
 	"fmt"
+	"hr/app/utils"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,8 +27,9 @@ func mongoClientMiddleware() gin.HandlerFunc {
 		// 连接 MongoDB
 		client, err := mongo.Connect(context.Background(), clientOptions)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
+			c.Error(utils.GetError(utils.MONGODB_INIT_ERROR, err.Error()))
 			c.Abort()
+			return
 		}
 		defer CloseMongoClient(client)
 		// 设置最大连接池大小
@@ -41,8 +42,9 @@ func mongoClientMiddleware() gin.HandlerFunc {
 		// 检查连接
 		err = client.Ping(ctx, nil)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
+			c.Error(utils.GetError(utils.CONNECT_ERROR, err.Error()))
 			c.Abort()
+			return
 		}
 
 		fmt.Println("Connected to MongoDB!")
@@ -62,7 +64,7 @@ func CloseMongoClient(client *mongo.Client) {
 	if client != nil {
 		err := client.Disconnect(context.Background())
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err) // 记录错误，这里就不中断了
 		}
 		fmt.Println("MongoDB connection closed.")
 	}

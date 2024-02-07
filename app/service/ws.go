@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"hr/app/utils"
 	"log"
 	"net/http"
 	"sync"
@@ -45,7 +47,7 @@ func HandleWebSocketConnection(c *gin.Context, userId string) {
 		if err != nil {
 			// 处理连接关闭或出错的情况
 			log.Printf("User %s disconnected\n", userId)
-
+			utils.ResponseError(c, err.Error())
 			// 将用户连接从连接池中移除
 			mu.Lock()
 			delete(connections, userId)
@@ -59,10 +61,12 @@ func HandleWebSocketConnection(c *gin.Context, userId string) {
 
 		go func() {
 			for msg := range msgs {
-				SendMessageToClient(userId, msg.Body)
+				SendMessageToClient(c, userId, msg.Body)
 				err := r.Channel.Ack(msg.DeliveryTag, false)
 				if err != nil {
-					log.Printf("Failed to acknowledge message: %v\n", err)
+					msg := fmt.Sprintf("Failed to acknowledge message: %v\n", err)
+					log.Printf(msg)
+					utils.ResponseError(c, msg)
 				}
 			}
 		}()
@@ -71,16 +75,18 @@ func HandleWebSocketConnection(c *gin.Context, userId string) {
 }
 
 // 发信
-func SendMessageToClient(userId string, message []byte) {
+func SendMessageToClient(c *gin.Context, userId string, message []byte) {
 	mu.Lock()
 	defer mu.Unlock()
 	userConn, exists := connections[userId]
 	if !exists {
-		// TODO
+
 		return
 	}
 	err := userConn.Conn.WriteMessage(websocket.TextMessage, message)
 	if err != nil {
-		log.Printf("Failed to send message to user %s: %v\n", userId, err)
+		msg := fmt.Sprintf("Failed to send message to user %s: %v\n", userId, err)
+		log.Printf(msg)
+		utils.ResponseError(c, msg)
 	}
 }

@@ -2,9 +2,9 @@ package midware
 
 import (
 	"errors"
+	"hr/app/utils"
 	"hr/configs/models"
 	"math/rand"
-	"net/http"
 	"strings"
 	"time"
 
@@ -70,29 +70,20 @@ func JWTAuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code": 2003,
-				"msg":  "请求头中auth为空",
-			})
+			utils.ResponseUnauthorized(c)
 			c.Abort()
 			return
 		}
 		// 按空格分割
 		parts := strings.Split(authHeader, ".")
 		if len(parts) != 3 {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code": 2004,
-				"msg":  "请求头中auth格式有误",
-			})
+			utils.ResponseUnauthorized(c)
 			c.Abort()
 			return
 		}
 		mc, err := ParseToken(string(jwtKey))
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code": 2005,
-				"msg":  "无效的Token",
-			})
+			utils.ResponseUnauthorized(c)
 			c.Abort()
 			return
 		}
@@ -106,7 +97,8 @@ func JWTAuthMiddleware(allowedRoles ...string) gin.HandlerFunc {
 			}
 		}
 		if !roleAllowed {
-			c.AbortWithStatus(http.StatusForbidden)
+			utils.ResponseUnauthorized(c)
+			c.Abort()
 			return
 		}
 

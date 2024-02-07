@@ -25,7 +25,8 @@ func NewTopic(c *gin.Context) {
 	var topicInformation CreateTopicInformation
 	err := c.ShouldBindJSON(&topicInformation)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	newTopic := models.Topic{
@@ -45,13 +46,15 @@ func GetTopicList(c *gin.Context) {
 	pageParam := c.Query("page")
 	page, err := strconv.Atoi(pageParam)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	limitParam := c.Query("limit")
 	limit, err := strconv.Atoi(limitParam)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	filter := bson.D{}
@@ -59,7 +62,8 @@ func GetTopicList(c *gin.Context) {
 	result := service.Find(c, "", "", filter, options)
 	var list []models.SubmitHistory
 	if err = result.All(context.TODO(), &list); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, list)
@@ -79,13 +83,11 @@ func GetTopic(c *gin.Context) {
 	var topic models.Topic
 	err := service.FindOne(c, "", "", filter).Decode(&topic)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
-	// // 更新浏览量
-	// redisClient := service.GetRedisClint(c)
-	// view := service.GetTopicViews(c, topicId)
-	// redisClient.Set(context.Background(), topicId, view, 0)
+	// 更新浏览量
 	filter = bson.M{
 		"_id": topicId,
 	}
@@ -108,7 +110,8 @@ func ModifiedTopic(c *gin.Context) {
 	var information ModifiedTopicInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	topicId := c.Param("topicId")

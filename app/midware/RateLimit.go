@@ -1,7 +1,7 @@
 package midware
 
 import (
-	"net/http"
+	"hr/app/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,7 @@ func RateLimitMiddleware(fillInterval time.Duration, cap, quantum int64) gin.Han
 	bucket := ratelimit.NewBucketWithQuantum(fillInterval, cap, quantum)
 	return func(c *gin.Context) {
 		if bucket.TakeAvailable(1) < 1 {
-			c.String(http.StatusForbidden, "rate limit...")
+			c.Error(utils.GetError(utils.LIMIT_ERROR, nil))
 			c.Abort()
 			return
 		}

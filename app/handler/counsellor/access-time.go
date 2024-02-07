@@ -4,7 +4,6 @@ import (
 	"context"
 	"hr/app/service"
 	"hr/app/utils"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,17 +18,20 @@ type AccessTime struct {
 func SetAccessTimeHandler(c *gin.Context) {
 	var accessTime AccessTime
 	if err := c.BindJSON(&accessTime); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	startTime, err := time.Parse(time.RFC1123, accessTime.StartTime)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid time format"})
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	endTime, err := time.Parse(time.RFC1123, accessTime.EndTime)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid time format"})
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	redisClient := service.GetRedisClint(c)

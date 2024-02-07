@@ -11,21 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// func InitRedisClient(c *gin.Context) *redis.Client {
-// 	clientOptions := redis.Options{
-// 		Addr:     fmt.Sprintf("%s:%d", redisHost, redisPort),
-// 		Password: redisPassword,
-// 	}
-// 	client := redis.NewClient(&clientOptions)
-// 	// 检查连接
-// 	if err := client.Ping(context.Background()).Err(); err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize MongoDB client"})
-// 		c.Abort()
-// 		return nil
-// 	}
-// 	return client
-// }
-
 func GetTopicViews(c *gin.Context, topicId string) int64 {
 	// 获取文章浏览量，先从缓存找，然后找不到再去数据库找
 	redisClient := GetRedisClint(c)
@@ -36,7 +21,7 @@ func GetTopicViews(c *gin.Context, topicId string) int64 {
 		var topic models.Topic
 		e := FindOne(c, "", "", filter).Decode(&topic)
 		if e != nil {
-			c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+			c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 			return -1
 		}
 		return int64(topic.ViewTimes)

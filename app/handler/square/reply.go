@@ -26,7 +26,8 @@ func NewReply(c *gin.Context) {
 	var information newReplyInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 
@@ -52,7 +53,8 @@ func GetReply(c *gin.Context) {
 	limitParam := c.Query("limit")
 	limit, err := strconv.Atoi(limitParam)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 
@@ -63,7 +65,8 @@ func GetReply(c *gin.Context) {
 	var Reply []models.Reply
 	cursor := service.Find(c, "", "", filter, options)
 	if err := cursor.All(context.TODO(), &Reply); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, Reply)

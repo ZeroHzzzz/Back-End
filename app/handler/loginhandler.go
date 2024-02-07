@@ -23,8 +23,9 @@ func LoginHandler(c *gin.Context) {
 
 	err := service.FindOne(c, "", "", filter).Decode(&user)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.LOGIN_ERROR, err.Error()))
 		c.Abort()
+		return
 	}
 
 	currentUser := models.CurrentUser{

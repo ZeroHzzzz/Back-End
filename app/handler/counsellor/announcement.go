@@ -22,7 +22,8 @@ func SetAnnouncement(c *gin.Context) {
 	var information announcement
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	currentUser := service.GetCurrentUser(c)

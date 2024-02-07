@@ -5,7 +5,6 @@ import (
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,6 +20,8 @@ func SubmitHandler(c *gin.Context) {
 	academicYear := c.PostForm("academicYear")
 	data, err := c.MultipartForm()
 	if err != nil {
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	files := data.File["evidence"]
@@ -31,6 +32,8 @@ func SubmitHandler(c *gin.Context) {
 		destPaths[i] = dst
 		err := c.SaveUploadedFile(file, dst)
 		if err != nil {
+			c.Error(utils.GetError(utils.INNER_ERROR, err.Error()))
+			c.Abort()
 			return
 		}
 	}
@@ -38,7 +41,9 @@ func SubmitHandler(c *gin.Context) {
 	// 从上下文中获取用户信息
 	currentUser := service.GetCurrentUser(c)
 	if currentUser.UserId != userId {
-		c.AbortWithStatus(http.StatusUnauthorized)
+		c.Error(utils.GetError(utils.UNAUTHORIZED, nil))
+		c.Abort()
+		return
 	}
 	newSubmission := models.SubmitInformation{
 		CurrentUser:  currentUser,
@@ -63,7 +68,8 @@ func GetSubmissionStatus(c *gin.Context) {
 	result := service.Find(c, "", "", filter)
 	var forms []models.SubmitInformation
 	if err := result.All(context.Background(), &forms); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, forms)

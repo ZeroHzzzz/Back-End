@@ -1,7 +1,6 @@
 package studentcontroller
 
 import (
-	"hr/app/midware"
 	"hr/app/service"
 	"hr/app/utils"
 
@@ -20,7 +19,8 @@ func ModifiedProfileHandler(c *gin.Context) {
 	var modifiedprofileinformation modifiedprofileInformation
 	err := c.ShouldBindJSON(&modifiedprofileinformation)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 
@@ -39,13 +39,13 @@ func ModifiedProfileHandler(c *gin.Context) {
 	_ = service.UpdateOne(c, "", "", filter, modified)
 	currentUser := service.GetCurrentUser(c)
 
-	newToken, err := midware.GenerateToken(currentUser)
-	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
-		return
-	}
+	// newToken, err := midware.GenerateToken(currentUser)
+	// if err != nil {
+	// 	c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+	// 	c.Abort()
+	// }
 	// 发信
 	service.PublishMessage(c, utils.UserExchange, currentUser.UserId, utils.ModifiedProfile)
-	// 生成新token
-	utils.ResponseSuccess(c, newToken)
+	// 生成新token, 但是好像不需要（）因为前端要重新登录
+	utils.ResponseSuccess(c, nil)
 }

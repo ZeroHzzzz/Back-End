@@ -19,7 +19,8 @@ func GetAnnouncement(c *gin.Context) {
 	var list []counsellor.Announcement
 	cursor := service.Find(c, "", "", filter, options)
 	if err := cursor.All(context.TODO(), &list); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, list)

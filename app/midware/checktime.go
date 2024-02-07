@@ -3,7 +3,7 @@ package midware
 import (
 	"context"
 	"hr/app/service"
-	"net/http"
+	"hr/app/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,7 @@ func CheckTimeRange() gin.HandlerFunc {
 		currentTime := time.Now()
 
 		if currentTime.Before(startTime) || currentTime.After(endTime) {
-			c.JSON(http.StatusForbidden, gin.H{"message": "Access not allowed at this time"})
+			c.Error(utils.GetError(utils.NOACCESS, nil))
 			c.Abort()
 			return
 		}

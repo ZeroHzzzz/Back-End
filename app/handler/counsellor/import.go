@@ -4,7 +4,6 @@ import (
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
@@ -12,31 +11,36 @@ import (
 )
 
 const savePath = ""
+const maxSizeLimit = 20
 
 func ImportStudentInformation(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	err := c.Request.ParseMultipartForm(10 << 20) // 最大10MB
+	err := c.Request.ParseMultipartForm(maxSizeLimit << 20) // 最大文件限制
 	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to parse form")
+		c.Error(utils.GetError(utils.FILE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 
 	// 获取上传的文件
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to get file")
+		c.Error(utils.GetError(utils.FILE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	defer file.Close()
 	xlsx, err := excelize.OpenReader(file)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to open Excel file")
+		c.Error(utils.GetError(utils.FILE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	// 遍历每个工作表和行
 	rows, err := xlsx.GetRows("Sheet1")
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to read rows")
+		c.Error(utils.GetError(utils.FILE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	item := rows[0]                // 表头
@@ -71,7 +75,7 @@ func ImportStudentInformation(c *gin.Context) {
 
 	}
 
-	c.String(http.StatusOK, "Data inserted successfully into MongoDB!")
+	utils.ResponseSuccess(c, nil)
 }
 
 type information struct {
@@ -87,7 +91,8 @@ func CorrectGrade(c *gin.Context) {
 	userId := c.Param("userID")
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	filter := bson.M{

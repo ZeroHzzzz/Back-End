@@ -24,7 +24,8 @@ func GetConcreteSorceHandler(c *gin.Context) {
 	var result models.Score
 	err := service.FindOne(c, "", "", filter).Decode(&result)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, result)
@@ -43,7 +44,7 @@ func GetYearScoreHandler(c *gin.Context) {
 	var student models.Student
 	err := service.FindOne(c, "", "", filter).Decode(&student)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		return
 	}
 	utils.ResponseSuccess(c, student.Mark)

@@ -7,7 +7,7 @@ import (
 )
 
 // 需要重写
-func Response(c *gin.Context, httpStatusCode int, code string, msg string, data interface{}) {
+func Response(c *gin.Context, httpStatusCode int, code int, msg string, data interface{}) {
 	c.JSON(httpStatusCode, gin.H{
 		"code": code,
 		"msg":  msg,
@@ -18,13 +18,13 @@ func ResponseUnauthorized(c *gin.Context) {
 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 }
 func ResponseSuccess(c *gin.Context, data interface{}) {
-	Response(c, http.StatusOK, "Success", "Success", data)
+	Response(c, http.StatusOK, 200, "Success", data)
 }
 
 func ResponseInternalError(c *gin.Context) {
-	Response(c, http.StatusInternalServerError, "Failed", "InternalServerError", nil)
+	Response(c, http.StatusInternalServerError, 500, "InternalServerError", nil)
 }
 
-func ResponseError(c *gin.Context, code string, msg string) {
-	Response(c, http.StatusInternalServerError, code, msg, nil)
+func ResponseError(c *gin.Context, data interface{}) {
+	Response(c, http.StatusInternalServerError, 502, "Error", data)
 }

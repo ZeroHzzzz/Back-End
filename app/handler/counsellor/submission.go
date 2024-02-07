@@ -26,7 +26,8 @@ func GetSubmissionList(c *gin.Context) {
 	var getsubmissionlistinformation getSubmissionListInformation
 	err := c.ShouldBindJSON(&getsubmissionlistinformation)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 
@@ -46,7 +47,8 @@ func GetSubmissionList(c *gin.Context) {
 	// 执行查询
 	cursor := service.Find(c, DatabaseName, CollectionName, filter, options)
 	if err := cursor.All(context.TODO(), &list); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, list)
@@ -67,7 +69,8 @@ func GetSubmission(c *gin.Context) {
 	var submission models.SubmitInformation
 	err := result.Decode(&submission)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, submission)

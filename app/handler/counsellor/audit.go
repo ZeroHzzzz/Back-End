@@ -33,7 +33,8 @@ func AuditOne(c *gin.Context) {
 	var information auditOneInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 
@@ -104,7 +105,8 @@ func AuditManySubmission(c *gin.Context) {
 	var information auditManyInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	// 批量更新状态
@@ -131,7 +133,8 @@ func AuditManySubmission(c *gin.Context) {
 	}
 	cursor := service.Find(c, "", "", fliter) //在submission中找
 	if err := cursor.All(context.TODO(), &successList); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	for _, successUser := range successList {
@@ -183,7 +186,8 @@ func GetAuditHistory(c *gin.Context) {
 	const CollectionName string = "" //student
 
 	if err := c.ShouldBindJSON(&information); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 
@@ -193,7 +197,8 @@ func GetAuditHistory(c *gin.Context) {
 
 	var list []models.SubmitHistory
 	if err := result.All(context.TODO(), &list); err != nil {
-		c.Error(utils.GetError(utils.VALID_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
 		return
 	}
 	utils.ResponseSuccess(c, list)
