@@ -27,7 +27,7 @@ func ModifiedProfileHandler(c *gin.Context) {
 	userid := c.Param("userId")
 
 	filter := bson.M{
-		"userId":   userid,
+		"_id":      userid,
 		"passWord": modifiedprofileinformation.PassWord,
 	}
 	modified := bson.M{

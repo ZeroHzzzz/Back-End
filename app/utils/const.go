@@ -14,6 +14,7 @@ const MongodbName = "Data_Mongodb"
 // collectionName
 const (
 	Student         = "student"
+	Counsellor      = "counsellor"
 	Score           = "score"
 	Submission      = "submission"
 	SubmitHistory   = "submit-history"

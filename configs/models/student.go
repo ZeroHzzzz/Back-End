@@ -1,7 +1,7 @@
 package models
 
 type Student struct {
-	UserId     string         `bson:"userId"`
+	UserId     string         `bson:"_id"`
 	UserName   string         `bson:"userName"`
 	passWord   string         `bson:"-"`
 	Class      string         `bson:"class"`

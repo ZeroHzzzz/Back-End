@@ -27,7 +27,7 @@ func Init(r *gin.Engine) {
 	const prelogin = "/login"
 	login := r.Group(prelogin)
 	{
-		login.GET("/student", handler.LoginHandler)
+		login.GET("/student", handler.LoginHandler_Student)
 		login.GET("/counsellor")
 	}
 

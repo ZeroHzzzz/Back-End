@@ -17,7 +17,7 @@ func GetConcreteSorceHandler(c *gin.Context) {
 
 	// 从上下文中获取mongo客户端
 	filter := bson.M{
-		"userId":       userId,
+		"_id":          userId,
 		"academicTear": academicYear,
 	}
 

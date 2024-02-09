@@ -66,7 +66,7 @@ func GetSubmissionStatus(c *gin.Context) {
 	userId := c.Param("userId")
 
 	filter := bson.M{
-		"userId": userId,
+		"_id": userId,
 	}
 
 	result := service.Find(c, utils.MongodbName, utils.Submission, filter)

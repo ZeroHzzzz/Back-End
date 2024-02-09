@@ -1,9 +1,9 @@
 package models
 
-type CurrentUser struct {
+type Counsellor struct {
 	UserId     string `bson:"_id"`
 	UserName   string `bson:"userName"`
-	Grade      string `bson:"grade"` //这里是年级不是成绩
-	Role       string `bson:"role"`
+	passWord   string `bson:"-"`
+	Grade      string `bson:"grade"`
 	Profession string `bson:"profession"`
 }
