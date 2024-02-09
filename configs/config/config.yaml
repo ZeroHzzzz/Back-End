@@ -1,6 +1,11 @@
-database:
-  name: Local_mysql
-  host: 127.0.0.1
-  port: 3306
-  user: root
-  pass: asdf112233
+MongoDB:
+  url: "mongodb://localhost:27017"
+  password: "123"
+
+redis:
+  url: "redis://localhost:6379"
+  password: "123"
+
+rabbitMQ:
+  url: "amqp://localhost:6379"
+  password: "123"

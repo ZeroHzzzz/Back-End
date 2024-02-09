@@ -4,13 +4,14 @@ import (
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const savePath = ""
+const savePath = utils.Information
 const maxSizeLimit = 20
 
 func ImportStudentInformation(c *gin.Context) {
@@ -60,18 +61,25 @@ func ImportStudentInformation(c *gin.Context) {
 		}
 		for colIndex, colValue := range row[6:] { //第六列后面就是成绩了
 			itemName := item[colIndex]
-			value := colValue
+			colvalue := colValue
+			value, err := strconv.Atoi(colvalue)
+			if err != nil {
+				c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+				c.Abort()
+				return
+			}
 			sorce := models.Score{
 				UserId:       userId,
 				AcademicYear: academicYear,
 				ItemName:     itemName,
-				Grade:        value,
+				Mark:         int64(value),
 			}
-			_ = service.InsertOne(c, "", "", sorce)
+			// 新增成绩
+			_ = service.InsertOne(c, utils.MongodbName, utils.Score, sorce)
 		}
 
-		// 插入记录到MongoDB集合中
-		_ = service.InsertOne(c, "", "", user)
+		// 新增用户
+		_ = service.InsertOne(c, utils.MongodbName, utils.Student, user)
 
 	}
 
@@ -105,6 +113,6 @@ func CorrectGrade(c *gin.Context) {
 			"grade": information.CorrectGrade,
 		},
 	}
-	_ = service.UpdateOne(c, "", "", filter, modified)
+	_ = service.UpdateOne(c, utils.MongodbName, utils.Score, filter, modified)
 	utils.ResponseSuccess(c, nil)
 }

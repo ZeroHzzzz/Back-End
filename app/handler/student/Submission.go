@@ -5,6 +5,7 @@ import (
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,6 +19,7 @@ func SubmitHandler(c *gin.Context) {
 	userId := c.Param("userId")
 	itemName := c.PostForm("itemName")
 	academicYear := c.PostForm("academicYear")
+	msg := c.PostForm("msg")
 	data, err := c.MultipartForm()
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
@@ -49,8 +51,10 @@ func SubmitHandler(c *gin.Context) {
 		CurrentUser:  currentUser,
 		ItemName:     itemName,
 		AcademicYear: academicYear,
+		Msg:          msg,
 		Evidence:     destPaths,
 		Status:       false,
+		CreateAt:     time.Now(),
 	}
 	insertResult := service.InsertOne(c, "", "", newSubmission)
 	utils.ResponseSuccess(c, insertResult.InsertedID)

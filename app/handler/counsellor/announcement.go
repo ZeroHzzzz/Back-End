@@ -31,7 +31,7 @@ func SetAnnouncement(c *gin.Context) {
 		AutherID: currentUser.UserId,
 		Content:  information.Content,
 	}
-	_ = service.InsertOne(c, "", "", newAnnouncement)
+	_ = service.InsertOne(c, utils.MongodbName, utils.Announcement, newAnnouncement)
 	service.PublishMessage(c, utils.GlobalExchange, "", currentUser.UserName+utils.Announcement+": "+information.Content) // 发布信息 用扇out交换机
 	utils.ResponseSuccess(c, nil)
 	return

@@ -8,21 +8,22 @@ import (
 
 type SubmitInformation struct {
 	CurrentUser
-	ItemName     string   `bson:"itemName"`
-	ItemValue    int64    `bson:"itemValue"`
-	AcademicYear string   `bson:"academicYear"`
-	Evidence     []string `bson:"evidence"`
-	Status       bool     `bson:"status"`
+	ItemName     string    `bson:"itemName"`
+	ItemValue    int64     `bson:"itemValue"`
+	AcademicYear string    `bson:"academicYear"`
+	Msg          string    `bson:"msg"`
+	Evidence     []string  `bson:"evidence"`
+	AduiterId    string    `bson:"aduiterId"`
+	Status       bool      `bson:"status"`
+	Cause        string    `bson:"cause"`
+	Advice       string    `bson:"advice"`
+	CreateAt     time.Time `bson:"create_at"`
 }
 
 type SubmitHistory struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
 	SubmissionId string             `bson:"submissionId"`
-	AuditorId    string             `bson:"auditorId"`
-	Status       bool               `bson:"status"`
-	Cause        string             `bson:"cause"`
-	Advice       string             `bson:"advice"`
+	AuditorId    string             `bson:"auditorId"` // 审核人
+	Message      string             `bson:"message"`
 	CreateAt     time.Time          `bson:"create_at"`
 }
-
-// 考虑一下要不要合并，还有history当中状态感觉应该得有三个，接受，驳回，撤回
