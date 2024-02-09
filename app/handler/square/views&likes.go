@@ -37,7 +37,7 @@ func LikesTopic(c *gin.Context) {
 		},
 	}
 	// 增加
-	_ = service.UpdateOne(c, "", "", filter, modified)
+	_ = service.UpdateOne(c, utils.MongodbName, utils.Topic, filter, modified)
 	utils.ResponseSuccess(c, nil)
 }
 
@@ -53,6 +53,6 @@ func LikeReply(c *gin.Context) {
 		},
 	}
 	// 增加
-	_ = service.UpdateOne(c, "", "", filter, modified)
+	_ = service.UpdateOne(c, utils.MongodbName, utils.Reply, filter, modified)
 	utils.ResponseSuccess(c, nil)
 }

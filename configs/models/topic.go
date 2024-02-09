@@ -7,8 +7,8 @@ type Topic struct {
 	Title     string    `bson:"title"`
 	Content   string    `bson:"content"`
 	AutherID  string    `bson:"autherId"`
-	Likes     int       `bson:"likes"`    //点赞量
-	ViewTimes int       `bson:"viewTime"` //浏览量
+	Likes     int       `bson:"likes"` //点赞量
+	Views     int       `bson:"views"` //浏览量
 	CreatedAt time.Time `bson:"createdAt"`
 }
 

@@ -14,7 +14,7 @@ type information struct {
 	Content  string `json:"content"`
 }
 
-func Feedback(c *gin.Context) {
+func FeedbackOAdvice(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	var information information
 	err := c.ShouldBindJSON(&information)
@@ -29,25 +29,25 @@ func Feedback(c *gin.Context) {
 		Content:  information.Content,
 		Status:   false,
 	}
-	insertResult := service.InsertOne(c, "", "", newFeeback)
+	insertResult := service.InsertOne(c, utils.MongodbName, utils.FeedbackOAdvice, newFeeback)
 	utils.ResponseSuccess(c, insertResult.InsertedID) //返回文档的id
 }
 
-func Advice(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
-	var information information
-	err := c.ShouldBindJSON(&information)
-	if err != nil {
-		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
-		c.Abort()
-		return
-	}
-	newFeeback := models.Feedback{
-		Category: information.Category,
-		UserId:   information.UserId,
-		Content:  information.Content,
-		Status:   false,
-	}
-	insertResult := service.InsertOne(c, "", "", newFeeback)
-	utils.ResponseSuccess(c, insertResult.InsertedID) //返回文档的id
-}
+// func Advice(c *gin.Context) {
+// 	c.Header("Content-Type", "application/json")
+// 	var information information
+// 	err := c.ShouldBindJSON(&information)
+// 	if err != nil {
+// 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+// 		c.Abort()
+// 		return
+// 	}
+// 	newFeeback := models.Feedback{
+// 		Category: information.Category,
+// 		UserId:   information.UserId,
+// 		Content:  information.Content,
+// 		Status:   false,
+// 	}
+// 	insertResult := service.InsertOne(c, , "", newFeeback)
+// 	utils.ResponseSuccess(c, insertResult.InsertedID) //返回文档的id
+// }

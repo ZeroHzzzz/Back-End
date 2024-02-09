@@ -36,7 +36,7 @@ func ModifiedProfileHandler(c *gin.Context) {
 		},
 	}
 	// 修改之后的文档
-	_ = service.UpdateOne(c, "", "", filter, modified)
+	_ = service.UpdateOne(c, utils.MongodbName, utils.Student, filter, modified)
 	currentUser := service.GetCurrentUser(c)
 
 	// newToken, err := midware.GenerateToken(currentUser)

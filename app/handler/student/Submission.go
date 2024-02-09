@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const savePath = ""
+const savePath = utils.Evidence
 
 func SubmitHandler(c *gin.Context) {
 	// 上传申报
@@ -56,7 +56,7 @@ func SubmitHandler(c *gin.Context) {
 		Status:       false,
 		CreateAt:     time.Now(),
 	}
-	insertResult := service.InsertOne(c, "", "", newSubmission)
+	insertResult := service.InsertOne(c, utils.MongodbName, utils.Submission, newSubmission)
 	utils.ResponseSuccess(c, insertResult.InsertedID)
 }
 
@@ -69,7 +69,7 @@ func GetSubmissionStatus(c *gin.Context) {
 		"userId": userId,
 	}
 
-	result := service.Find(c, "", "", filter)
+	result := service.Find(c, utils.MongodbName, utils.Submission, filter)
 	var forms []models.SubmitInformation
 	if err := result.All(context.Background(), &forms); err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))

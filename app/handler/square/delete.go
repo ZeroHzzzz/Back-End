@@ -18,22 +18,26 @@ func DeleteTopic(c *gin.Context) {
 		filter := bson.M{
 			"_id": topicId,
 		}
-		_ = service.DeleteOne(c, "", "", filter)
+		_ = service.DeleteOne(c, utils.MongodbName, utils.Topic, filter)
 		// 删除评论
+		filter = bson.M{
+			"topicId": topicId,
+		}
+		_ = service.DeleteMany(c, utils.MongodbName, utils.Reply, filter)
 
 	} else if currentUser.Role == "student" {
 		filter := bson.M{
 			"_id":      topicId,
 			"autherID": currentUser.UserId,
 		}
-		_ = service.DeleteOne(c, "", "", filter)
+		_ = service.DeleteOne(c, utils.MongodbName, utils.Topic, filter)
+
+		filter = bson.M{
+			"topicId": topicId,
+		}
+		_ = service.DeleteMany(c, utils.MongodbName, utils.Reply, filter)
 
 	}
-	// 要改
-	filter := bson.M{
-		"topicId": topicId,
-	}
-	_ = service.DeleteMany(c, "", "", filter)
 	utils.ResponseSuccess(c, nil)
 }
 
@@ -50,11 +54,12 @@ func DeleteReply(c *gin.Context) {
 	filter := bson.M{
 		"replyID": replyID,
 	}
-	_ = service.DeleteOne(c, "", "", filter)
+	_ = service.DeleteOne(c, utils.MongodbName, utils.Reply, filter)
 
 	filter = bson.M{
 		"parentID": replyID,
 	}
-	_ = service.DeleteMany(c, "", "", filter)
+	// 删除子评论
+	_ = service.DeleteMany(c, utils.MongodbName, utils.Reply, filter)
 	utils.ResponseSuccess(c, nil)
 }

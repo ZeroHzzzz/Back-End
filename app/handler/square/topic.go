@@ -6,6 +6,7 @@ import (
 	"hr/app/utils"
 	"hr/configs/models"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,11 +31,12 @@ func NewTopic(c *gin.Context) {
 		return
 	}
 	newTopic := models.Topic{
-		Title:    topicInformation.Title,
-		Content:  topicInformation.Content,
-		AutherID: topicInformation.UserId,
+		Title:     topicInformation.Title,
+		Content:   topicInformation.Content,
+		AutherID:  topicInformation.UserId,
+		CreatedAt: time.Now(),
 	}
-	insertResult := service.InsertOne(c, "", "", newTopic)
+	insertResult := service.InsertOne(c, utils.MongodbName, utils.Topic, newTopic)
 	utils.ResponseSuccess(c, insertResult.InsertedID)
 	return
 }
@@ -59,7 +61,7 @@ func GetTopicList(c *gin.Context) {
 	}
 	filter := bson.D{}
 	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((int64(page) - 1) * int64(limit)).SetLimit(int64(limit))
-	result := service.Find(c, "", "", filter, options)
+	result := service.Find(c, utils.MongodbName, utils.Topic, filter, options)
 	var list []models.SubmitHistory
 	if err = result.All(context.TODO(), &list); err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
@@ -81,7 +83,7 @@ func GetTopic(c *gin.Context) {
 		"_id": topicId,
 	}
 	var topic models.Topic
-	err := service.FindOne(c, "", "", filter).Decode(&topic)
+	err := service.FindOne(c, utils.MongodbName, utils.Topic, filter).Decode(&topic)
 	if err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
@@ -96,7 +98,7 @@ func GetTopic(c *gin.Context) {
 			"views": 1,
 		},
 	}
-	_ = service.UpdateOne(c, "", "", filter, modified)
+	_ = service.UpdateOne(c, utils.MongodbName, utils.Topic, filter, modified)
 	utils.ResponseSuccess(c, topic)
 	return
 }
@@ -129,7 +131,7 @@ func ModifiedTopic(c *gin.Context) {
 			"content": information.Context,
 		},
 	}
-	_ = service.UpdateOne(c, "", "", filter, modified)
+	_ = service.UpdateOne(c, utils.MongodbName, utils.Topic, filter, modified)
 
 	utils.ResponseSuccess(c, nil)
 }

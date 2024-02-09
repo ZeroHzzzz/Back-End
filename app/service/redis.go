@@ -19,12 +19,12 @@ func GetTopicViews(c *gin.Context, topicId string) int64 {
 		// 数据库找
 		filter := bson.M{"_id": topicId}
 		var topic models.Topic
-		e := FindOne(c, "", "", filter).Decode(&topic)
+		e := FindOne(c, utils.MongodbName, utils.Topic, filter).Decode(&topic)
 		if e != nil {
 			c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 			return -1
 		}
-		return int64(topic.ViewTimes)
+		return int64(topic.Views)
 	} else if err != nil {
 		return -1
 	}

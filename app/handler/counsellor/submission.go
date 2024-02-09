@@ -20,9 +20,6 @@ type getSubmissionListInformation struct {
 }
 
 func GetSubmissionList(c *gin.Context) {
-	const DatabaseName string = ""
-	const CollectionName string = ""
-
 	var getsubmissionlistinformation getSubmissionListInformation
 	err := c.ShouldBindJSON(&getsubmissionlistinformation)
 	if err != nil {
@@ -34,7 +31,6 @@ func GetSubmissionList(c *gin.Context) {
 	// 获取collection
 	var list []models.SubmitInformation
 
-	// 这里可能会有bug，因为这里是嵌套字段，不知道能不能直接查出来
 	// 获取未审核表单
 	filter := bson.M{
 		"class":      getsubmissionlistinformation.Class,
@@ -45,7 +41,7 @@ func GetSubmissionList(c *gin.Context) {
 	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((getsubmissionlistinformation.Index - 1) * getsubmissionlistinformation.PaginationSize).SetLimit(getsubmissionlistinformation.PaginationSize)
 
 	// 执行查询
-	cursor := service.Find(c, DatabaseName, CollectionName, filter, options)
+	cursor := service.Find(c, utils.MongodbName, utils.Submission, filter, options)
 	if err := cursor.All(context.TODO(), &list); err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
@@ -58,13 +54,10 @@ func GetSubmissionList(c *gin.Context) {
 func GetSubmission(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
-	const DatabaseName string = ""
-	const CollectionName string = "" //student
-
 	submissionId := c.Param("submissionId")
 
 	filter := bson.M{"submissionId": submissionId}
-	result := service.FindOne(c, DatabaseName, CollectionName, filter)
+	result := service.FindOne(c, utils.MongodbName, utils.Submission, filter)
 
 	var submission models.SubmitInformation
 	err := result.Decode(&submission)
