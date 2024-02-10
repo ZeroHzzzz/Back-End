@@ -2,6 +2,9 @@ package router
 
 import (
 	"hr/app/handler"
+	counsellorhandler "hr/app/handler/counsellor"
+	squarehandler "hr/app/handler/square"
+	"hr/app/handler/studenthandler"
 	"hr/app/midware"
 	"net/http"
 
@@ -23,74 +26,62 @@ func Init(r *gin.Engine) {
 
 		c.Next()
 	})
-
-	const prelogin = "/login"
-	login := r.Group(prelogin)
+	login := r.Group("login", midware.ErrorHandler(), midware.MongoClientMiddleware())
 	{
 		login.GET("/student", handler.LoginHandler_Student)
-		login.GET("/counsellor")
+		login.GET("/counseller", handler.LoginHandler_Counsellor)
 	}
-
-	const preStudent = "/student"
-	student := r.Group(preStudent)
+	api := r.Group("/api", midware.ErrorHandler(), midware.MongoClientMiddleware(), midware.JWTAuthMiddleware("Student", "Counsellor"))
 	{
-		student.Use(func(c *gin.Context) {
-			midware.JWTAuthMiddleware()
-			if !c.IsAborted() {
-				c.Next()
+		api.GET("/ws/:userID", handler.WebSocketConnection)
+		api.GET("/submit/history", counsellorhandler.GetAuditHistory)
+		student := api.Group("/student", midware.GetRabbitMQMiddleware(), midware.RedisClientMiddleware())
+		{
+			student.PUT("/profile/:userId", studenthandler.ModifiedProfileHandler)
+			student.POST("/feedbackOradvice", studenthandler.FeedbackOAdvice)
+			student.GET("/score", studenthandler.GetConcreteSorce)
+			submit := student.Group("/submit")
+			{
+				submit.POST("/submission", studenthandler.Submission)
+				submit.GET("/status/:formID", studenthandler.GetSubmissionStatus)
+				submit.GET("/list")
 			}
-		})
-
-		student.PUT("/profile/:userId")
-		student.GET("/profile/:userId")
-
-		student.POST("/:userId/form/submit")
-		student.GET("/:userId/form/search")
-
-		student.POST("/feedback")
-		student.POST("/recommend")
-
-		student.GET("/score/:userId/:academicYear")
-	}
-
-	const preCounsellor = "/counsellor"
-	counsellor := r.Group(preCounsellor)
-	{
-		counsellor.Use(func(c *gin.Context) {
-			midware.JWTAuthMiddleware()
-			if !c.IsAborted() {
-				c.Next()
+		}
+		counsellor := api.Group("/counsellor", midware.GetRabbitMQMiddleware(), midware.RedisClientMiddleware())
+		{
+			counsellor.POST("/:counsellorId/cause", counsellorhandler.AddCause)
+			counsellor.GET("/:counsellorId/cause", counsellorhandler.GetCause)
+			counsellor.POST("/access-time", counsellorhandler.SetAccessTimeHandler)
+			counsellor.POST("/setannouncement", counsellorhandler.SetAnnouncement)
+			audit := counsellor.Group("/audit")
+			{
+				audit.GET("/list", counsellorhandler.GetSubmissionList)
+				audit.PUT("/review/:submission", counsellorhandler.AuditOne)
+				audit.PUT("review", counsellorhandler.AuditMany)
+				// audit.PUT("/remake/:submissionId", counsellorhandler.)
 			}
-		})
-
-		counsellor.GET("/audit/pending")
-		counsellor.GET("/audit/:formId")
-		counsellor.PUT("/audit/:formId/review")
-		counsellor.PUT("/audit/review")
-		counsellor.GET("/audit/:formId/history")
-		counsellor.DELETE("/audit/:formId/revoke")
-
-		counsellor.PUT("/grade/personal-import/:userId")
-		counsellor.PUT("/grade/bulk-import")
-
-		counsellor.POST("/:counsellorId/cause")
-		counsellor.POST("/setddl")
-	}
-
-	const preSquare = "square"
-	square := r.Group(preSquare)
-	{
-		square.Use(func(c *gin.Context) {
-			midware.JWTAuthMiddleware()
-			if !c.IsAborted() {
-				c.Next()
+			grade := counsellor.Group("/grade")
+			{
+				grade.PUT("/correct/:userID", counsellorhandler.CorrectGrade)
+				grade.POST("/bulk-import", counsellorhandler.ImportStudentInformation)
 			}
-		})
-		square.POST("/topic/create")
-		square.GET("/topic")
-		square.GET("/square/topic/:topicId")
-		square.POST("/topic/:topicId/replies")
-		square.PUT("/topic/:topicId")
-		square.DELETE("/topic/:topicId")
+		}
+		square := api.Group("/square")
+		{
+			square.GET("/annnoucement", squarehandler.GetAnnouncement)
+			topic := square.Group("/topic")
+			{
+				topic.POST("/new", squarehandler.NewTopic)
+				topic.PUT("/:topicID", squarehandler.ModifiedTopic)
+				topic.GET("/list", squarehandler.GetTopicList)
+				topic.GET("/:topicID", squarehandler.GetTopic)
+				topic.POST("/:topicID/replies", squarehandler.NewReply)
+				topic.GET("/:topicID/views&likes0", squarehandler.GetViewsAndlikes)
+				topic.PUT("/reply/:replyID/likes", squarehandler.LikeReply)
+				topic.PUT("/:topicID/likes", squarehandler.LikesTopic)
+				topic.DELETE("/:topicID", squarehandler.DeleteTopic)
+				topic.DELETE("/reply/:replyID", squarehandler.DeleteReply)
+			}
+		}
 	}
 }

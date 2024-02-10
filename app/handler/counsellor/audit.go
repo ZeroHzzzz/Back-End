@@ -1,4 +1,4 @@
-package counsellor
+package counsellorhandler
 
 import (
 	"context"
@@ -107,7 +107,7 @@ type auditManyInformation struct {
 	Cause         []string `json:"cause"`
 }
 
-func AuditManySubmission(c *gin.Context) {
+func AuditMany(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	// 获取用户信息
 	currentUser := service.GetCurrentUser(c)

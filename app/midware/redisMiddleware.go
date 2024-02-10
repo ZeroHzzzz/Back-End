@@ -2,24 +2,20 @@ package midware
 
 import (
 	"context"
-	"fmt"
 	"hr/app/utils"
+	configs "hr/configs/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
 
-const (
-	redisHost     = "localhost"
-	redisPort     = 6379
-	redisPassword = ""
-)
-
-func redisClientMiddleware() gin.HandlerFunc {
+func RedisClientMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		redisurl := configs.Config.GetString("redis.url")
+		redispassword := configs.Config.GetString("redis.password")
 		clientOptions := redis.Options{
-			Addr:     fmt.Sprintf("%s:%d", redisHost, redisPort),
-			Password: redisPassword,
+			Addr:     redisurl,
+			Password: redispassword,
 		}
 		client := redis.NewClient(&clientOptions)
 		defer client.Close()

@@ -1,4 +1,4 @@
-package studentcontroller
+package studenthandler
 
 import (
 	"hr/app/service"

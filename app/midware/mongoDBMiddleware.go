@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hr/app/utils"
+	configs "hr/configs/config"
 	"log"
 	"time"
 
@@ -12,18 +13,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	MongoDBHost     = "localhost"
-	MongoDBPort     = 27017
-	MongoDBPassword = "password" // 这里没有配置密码，很有可能出问题
-)
-
-func mongoClientMiddleware() gin.HandlerFunc {
+func MongoClientMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// 获取配置
+		mongoDBurl := configs.Config.GetString("MongoDB.url")
+		mongoDBuser := configs.Config.GetString("MongoDB.user")
+		mongoDBpassword := configs.Config.GetString("MongoDB.password")
+
 		// 初始化 MongoDB 客户端
 		// 设置 MongoDB 连接配置
-		clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", MongoDBHost, MongoDBPort)).SetConnectTimeout(10 * time.Second)
-
+		clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s", mongoDBuser, mongoDBpassword, mongoDBurl)).SetConnectTimeout(10 * time.Second)
 		// 连接 MongoDB
 		client, err := mongo.Connect(context.Background(), clientOptions)
 		if err != nil {

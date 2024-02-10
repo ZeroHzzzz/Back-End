@@ -3,20 +3,20 @@ package service
 import (
 	"fmt"
 	"hr/app/utils"
+	configs "hr/configs/config"
 	"hr/configs/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/streadway/amqp"
 )
 
-const (
-	rmqHost     = "localhost"
-	rmqPort     = 6379
-	rmqPassword = ""
-)
-
 func Initrmq(c *gin.Context) *models.RabbitMQMiddleware {
-	conn, err := amqp.Dial(fmt.Sprintf("amqp://guest:guest@localhost:%d/", rmqPort))
+	// 加载配置
+	rabbitMQurl := configs.Config.GetString("rabbitMQ.url")
+	rabbitMQuser := configs.Config.GetString("rabbitMQ.user")
+	rabbitMQpassword := configs.Config.GetString("rabbitMQ.password")
+
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s", rabbitMQuser, rabbitMQpassword, rabbitMQurl))
 	if err != nil {
 		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, err.Error()))
 		c.Abort()

@@ -1,4 +1,4 @@
-package counsellor
+package counsellorhandler
 
 import (
 	"context"

@@ -1,5 +1,5 @@
 // 读取配置
-package config
+package configs
 
 import (
 	"log"
@@ -12,7 +12,7 @@ var Config = viper.New()
 func init() {
 	Config.SetConfigName("config")
 	Config.SetConfigType("yaml")
-	Config.AddConfigPath("./configs/config")
+	Config.AddConfigPath("./config")
 	Config.WatchConfig() // 自动将配置读入Config变量
 
 	err := Config.ReadInConfig()

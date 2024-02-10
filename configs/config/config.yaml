@@ -1,11 +1,13 @@
 MongoDB:
-  url: "mongodb://localhost:27017"
+  url: "localhost:27017"
+  user: "admin"
   password: "123"
 
 redis:
-  url: "redis://localhost:6379"
+  url: "localhost:6379"
   password: "123"
 
 rabbitMQ:
-  url: "amqp://localhost:6379"
+  url: "localhost:6379"
+  user: "admin"
   password: "123"

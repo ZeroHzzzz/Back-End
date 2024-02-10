@@ -1,4 +1,4 @@
-package counsellor
+package counsellorhandler
 
 import (
 	"context"
@@ -48,7 +48,6 @@ func GetSubmissionList(c *gin.Context) {
 		return
 	}
 	utils.ResponseSuccess(c, list)
-	return
 }
 
 func GetSubmission(c *gin.Context) {

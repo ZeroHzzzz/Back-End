@@ -1,4 +1,4 @@
-package studentcontroller
+package studenthandler
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 
 const savePath = utils.Evidence
 
-func SubmitHandler(c *gin.Context) {
+func Submission(c *gin.Context) {
 	// 上传申报
 	c.Header("Content-Type", "application/json")
 	userId := c.Param("userId")
@@ -61,7 +61,6 @@ func SubmitHandler(c *gin.Context) {
 }
 
 func GetSubmissionStatus(c *gin.Context) {
-	// 从Form数据库中查找，然后返回每个的状态，数据格式应该是一个字典
 	c.Header("Content-Type", "application/json")
 	userId := c.Param("userId")
 
@@ -78,3 +77,5 @@ func GetSubmissionStatus(c *gin.Context) {
 	}
 	utils.ResponseSuccess(c, forms)
 }
+
+// 这个东西要改

@@ -1,4 +1,4 @@
-package studentcontroller
+package studenthandler
 
 import (
 	"hr/app/service"
@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetConcreteSorceHandler(c *gin.Context) {
+func GetConcreteSorce(c *gin.Context) {
 	// 上传申报
 	c.Header("Content-Type", "application/json")
 	userId := c.Param("userId")

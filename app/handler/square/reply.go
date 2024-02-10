@@ -1,4 +1,4 @@
-package square
+package squarehandler
 
 import (
 	"context"
