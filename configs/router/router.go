@@ -60,10 +60,12 @@ func Init(r *gin.Engine) {
 				audit.PUT("review", counsellorhandler.AuditMany)
 				// audit.PUT("/remake/:submissionId", counsellorhandler.)
 			}
-			grade := counsellor.Group("/grade")
+			information := counsellor.Group("/information")
 			{
-				grade.PUT("/correct/:userID", counsellorhandler.CorrectGrade)
-				grade.POST("/bulk-import", counsellorhandler.ImportStudentInformation)
+				information.PUT("/correct/:userID", counsellorhandler.CorrectGrade)
+				information.POST("/bulk-import/student", counsellorhandler.ImportStudent)
+				information.POST("/bulk-import/counsellor", counsellorhandler.ImportCounsellor)
+				information.POST("/bulk-import/mark", counsellorhandler.ImportMark)
 			}
 		}
 		square := api.Group("/square")

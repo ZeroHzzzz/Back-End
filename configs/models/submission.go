@@ -11,12 +11,12 @@ type SubmitInformation struct {
 	ItemName     string    `bson:"itemName"`
 	ItemValue    int64     `bson:"itemValue"`
 	AcademicYear string    `bson:"academicYear"`
-	Msg          string    `bson:"msg"`
-	Evidence     []string  `bson:"evidence"`
-	AduiterId    string    `bson:"aduiterId"`
+	Msg          string    `bson:"msg,omitempty"` // 这个是提交的项目描述
+	Evidence     []string  `bson:"evidence,omitempty"`
+	AduiterId    string    `bson:"aduiterId,omitempty"`
 	Status       bool      `bson:"status"`
-	Cause        string    `bson:"cause"`
-	Advice       string    `bson:"advice"`
+	Cause        string    `bson:"cause,omitempty"`
+	Advice       string    `bson:"advice,omitempty"`
 	CreateAt     time.Time `bson:"create_at"`
 }
 

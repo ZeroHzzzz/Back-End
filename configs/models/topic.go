@@ -9,7 +9,7 @@ type Topic struct {
 	AutherID  string    `bson:"autherId"`
 	Likes     int       `bson:"likes"` //点赞量
 	Views     int       `bson:"views"` //浏览量
-	CreatedAt time.Time `bson:"createdAt"`
+	CreatedAt time.Time `bson:"created_at"`
 }
 
 // 数据模型记得在更新的时候要改
