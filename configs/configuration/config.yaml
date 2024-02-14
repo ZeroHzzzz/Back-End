@@ -8,6 +8,6 @@ redis:
   password: "admin"
 
 rabbitMQ:
-  url: "localhost:15672"
+  url: "localhost:5672"
   user: "guest"
   password: "guest"

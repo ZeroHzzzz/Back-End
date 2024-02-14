@@ -12,11 +12,12 @@ import (
 
 // mongoDB
 // Update
-func UpdateOne(c *gin.Context, databaseName, collectionName string, filter, modified interface{}) *mongo.UpdateResult {
+func UpdateOne(c *gin.Context, databaseName, collectionName string, filter, modified interface{}, opts ...*options.UpdateOptions) *mongo.UpdateResult {
 	mongoClient := GetmongoClient(c)
 	database := mongoClient.Database(databaseName)
 	collection := database.Collection(collectionName)
-	updateResult, err := collection.UpdateOne(context.Background(), filter, modified)
+	opt := options.MergeUpdateOptions(opts...)
+	updateResult, err := collection.UpdateOne(context.Background(), filter, modified, opt)
 	// 如果没有合适的修改也会抛出错误
 	if err != nil || updateResult.ModifiedCount == 0 {
 		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, "UpdateOne Failed"))
@@ -123,4 +124,23 @@ func DeleteMany(c *gin.Context, databaseName, collectionName string, filter inte
 		return nil
 	}
 	return cursor
+}
+
+func ReplaceOne(c *gin.Context, databaseName, collectionName string, filter interface{}, replacement interface{}) *mongo.UpdateResult {
+	// 获取 MongoDB 客户端
+	mongoClient := GetmongoClient(c)
+	database := mongoClient.Database(databaseName)
+	collection := database.Collection(collectionName)
+	// 执行替换操作
+	opts := options.Replace().SetUpsert(true)
+	replaceResult, err := collection.ReplaceOne(context.Background(), filter, replacement, opts)
+	if err != nil {
+		// 如果发生错误，返回错误并终止处理
+		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, err.Error()))
+		c.Abort()
+		return nil
+	}
+
+	// 返回替换结果
+	return replaceResult
 }

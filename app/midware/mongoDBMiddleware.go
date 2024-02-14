@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hr/app/utils"
-	configs "hr/configs/config"
+	configs "hr/configs/configuration"
 	"log"
 	"time"
 

@@ -2,6 +2,7 @@ package studenthandler
 
 import (
 	"context"
+	"fmt"
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
@@ -27,10 +28,12 @@ func Submission(c *gin.Context) {
 		return
 	}
 	files := data.File["evidence"]
+	fmt.Println(files[0].Filename)
 	destPaths := make([]string, len(files))
 
 	for i, file := range files {
 		dst := savePath + "/" + file.Filename
+		fmt.Println(dst)
 		destPaths[i] = dst
 		err := c.SaveUploadedFile(file, dst)
 		if err != nil {
@@ -62,10 +65,10 @@ func Submission(c *gin.Context) {
 
 func GetSubmissionStatus(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	userId := c.Param("userId")
+	userId := c.Query("userId")
 
 	filter := bson.M{
-		"_id": userId,
+		"currentUser.userId": userId,
 	}
 
 	result := service.Find(c, utils.MongodbName, utils.Submission, filter)

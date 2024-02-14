@@ -46,6 +46,5 @@ func ModifiedProfileHandler(c *gin.Context) {
 	// }
 	// 发信
 	service.PublishMessage(c, utils.UserExchange, currentUser.UserId, utils.ModifiedProfile)
-	// 生成新token, 但是好像不需要（）因为前端要重新登录
 	utils.ResponseSuccess(c, nil)
 }

@@ -8,11 +8,13 @@ import (
 
 // 需要重写
 func Response(c *gin.Context, httpStatusCode int, code int, msg string, data interface{}) {
-	c.JSON(httpStatusCode, gin.H{
-		"code": code,
-		"msg":  msg,
-		"data": data,
-	})
+	if !c.IsAborted() {
+		c.JSON(httpStatusCode, gin.H{
+			"code": code,
+			"msg":  msg,
+			"data": data,
+		})
+	}
 }
 func ResponseUnauthorized(c *gin.Context) {
 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})

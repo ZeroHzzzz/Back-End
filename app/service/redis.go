@@ -1,41 +1,33 @@
 package service
 
 import (
-	"context"
-	"fmt"
 	"hr/app/utils"
 	"hr/configs/models"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetTopicViews(c *gin.Context, topicId string) int64 {
-	// 获取文章浏览量，先从缓存找，然后找不到再去数据库找
-	redisClient := GetRedisClint(c)
-	view, err := redisClient.Get(context.Background(), fmt.Sprintf("%s_Topic_Views", topicId)).Int64()
-	if err == redis.Nil {
-		// 数据库找
-		filter := bson.M{"_id": topicId}
-		var topic models.Topic
-		e := FindOne(c, utils.MongodbName, utils.Topic, filter).Decode(&topic)
-		if e != nil {
-			c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
-			return -1
-		}
-		return int64(topic.Views)
-	} else if err != nil {
-		return -1
-	}
-	return view
-}
-
-func GetTopicLikes(c *gin.Context, topicId string) int64 {
-	redisClient := GetRedisClint(c)
-	like, err := redisClient.Get(context.Background(), fmt.Sprintf("%s_Topic_Likes", topicId)).Int64()
+func GetTopicViewsALikes(c *gin.Context, topicId string) (int64, int64) {
+	objectId, err := primitive.ObjectIDFromHex(topicId)
 	if err != nil {
-		return -1
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
+		return -1, -1
 	}
-	return like
+	// 获取文章浏览量，先从缓存找，然后找不到再去数据库找
+	filter := bson.M{"_id": objectId}
+	var topic models.Topic
+	result := FindOne(c, utils.MongodbName, utils.Topic, filter)
+	if result.Err() != nil {
+		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, result.Err().Error()))
+		return -1, -1
+	}
+	decodeErr := result.Decode(&topic)
+	if decodeErr != nil {
+		c.Error(utils.GetError(utils.DECODE_ERROR, decodeErr.Error()))
+		return -1, -1
+	}
+	return int64(topic.Views), int64(topic.Likes)
 }

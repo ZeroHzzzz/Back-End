@@ -1,11 +1,13 @@
 package squarehandler
 
 import (
+	"fmt"
 	"hr/app/service"
 	"hr/app/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type response struct {
@@ -15,9 +17,9 @@ type response struct {
 
 func GetViewsAndlikes(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Param("topicID")
-	views := service.GetTopicViews(c, topicId)
-	likes := service.GetTopicLikes(c, topicId)
+	topicId := c.Query("topicId")
+	fmt.Println(topicId)
+	views, likes := service.GetTopicViewsALikes(c, topicId)
 
 	utils.ResponseSuccess(c, &response{
 		View: views,
@@ -27,9 +29,15 @@ func GetViewsAndlikes(c *gin.Context) {
 
 func LikesTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Param("topicID")
+	topicId := c.Query("topicId")
+	objectId, err := primitive.ObjectIDFromHex(topicId)
+	if err != nil {
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
 	filter := bson.M{
-		"_id": topicId,
+		"_id": objectId,
 	}
 	modified := bson.M{
 		"$inc": bson.M{
@@ -43,9 +51,15 @@ func LikesTopic(c *gin.Context) {
 
 func LikeReply(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	replyId := c.Param("replyID")
+	replyId := c.Query("replyId")
+	objectId, err := primitive.ObjectIDFromHex(replyId)
+	if err != nil {
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
 	filter := bson.M{
-		"_id": replyId,
+		"_id": objectId,
 	}
 	modified := bson.M{
 		"$inc": bson.M{

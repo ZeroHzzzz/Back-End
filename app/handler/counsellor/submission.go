@@ -5,6 +5,7 @@ import (
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,16 +13,28 @@ import (
 )
 
 type getSubmissionListInformation struct {
-	Index          int64 `json:"index" binding:"required"`
-	PaginationSize int64 `json:"paginationSize"`
-	Profession     int64 `json:"profession"`
-	Grade          int64 `json:"grade"` //年级
-	Class          int64 `json:"class"`
+	Profession string `json:"profession"`
+	Grade      string `json:"grade"` //年级
+	Class      string `json:"class"`
 }
 
 func GetSubmissionList(c *gin.Context) {
 	var getsubmissionlistinformation getSubmissionListInformation
-	err := c.ShouldBindJSON(&getsubmissionlistinformation)
+	pageParam := c.Query("page")
+	page, err := strconv.Atoi(pageParam)
+	if err != nil {
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
+	limitParam := c.Query("limit")
+	limit, err := strconv.Atoi(limitParam)
+	if err != nil {
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
+	err = c.ShouldBindJSON(&getsubmissionlistinformation)
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
 		c.Abort()
@@ -32,13 +45,23 @@ func GetSubmissionList(c *gin.Context) {
 	var list []models.SubmitInformation
 
 	// 获取未审核表单
-	filter := bson.M{
-		"class":      getsubmissionlistinformation.Class,
-		"profession": getsubmissionlistinformation.Profession,
-		"grade":      getsubmissionlistinformation.Grade,
-		"status":     false,
+	// filter := bson.M{
+	// 	"class":      getsubmissionlistinformation.Class,
+	// 	"profession": getsubmissionlistinformation.Profession,
+	// 	"grade":      getsubmissionlistinformation.Grade,
+	// 	"status":     false,
+	// }
+	filter := bson.M{"status": false}
+	if getsubmissionlistinformation.Class != "" {
+		filter["class"] = getsubmissionlistinformation.Class
 	}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((getsubmissionlistinformation.Index - 1) * getsubmissionlistinformation.PaginationSize).SetLimit(getsubmissionlistinformation.PaginationSize)
+	if getsubmissionlistinformation.Profession != "" {
+		filter["profession"] = getsubmissionlistinformation.Profession
+	}
+	if getsubmissionlistinformation.Grade != "" {
+		filter["grade"] = getsubmissionlistinformation.Grade
+	}
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(int64((page - 1) * limit)).SetLimit(int64(limit))
 
 	// 执行查询
 	cursor := service.Find(c, utils.MongodbName, utils.Submission, filter, options)

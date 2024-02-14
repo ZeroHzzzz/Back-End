@@ -1,6 +1,8 @@
 package counsellorhandler
 
 import (
+	"context"
+	"fmt"
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
@@ -9,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const savePath = utils.Information
@@ -80,14 +83,18 @@ func ImportCounsellor(c *gin.Context) {
 		userName := row[1]
 		grade := row[2]
 		profession := row[3]
-		user := models.Counsellor{
-			UserId:     userId,
-			UserName:   userName,
-			Grade:      grade,
-			Profession: profession,
+		fliter := bson.M{
+			"_id": userId,
 		}
-		_ = service.InsertOne(c, utils.MongodbName, utils.Counsellor, user)
+		user := bson.M{
+			"_id":        userId,
+			"userName":   userName,
+			"grade":      grade,
+			"profession": profession,
+		}
+		service.ReplaceOne(c, utils.MongodbName, utils.Counsellor, fliter, user)
 	}
+	utils.ResponseSuccess(c, nil)
 }
 
 func ImportStudent(c *gin.Context) {
@@ -126,14 +133,18 @@ func ImportStudent(c *gin.Context) {
 		grade := row[2]
 		profession := row[3]
 		class := row[4]
-		user := models.Student{
-			UserId:     userId,
-			UserName:   userName,
-			Class:      class,
-			Profession: profession,
-			Grade:      grade,
+		filter := bson.M{
+			"_id": userId,
 		}
-		_ = service.InsertOne(c, utils.MongodbName, utils.Student, user)
+		user := bson.M{
+			"_id":        userId,
+			"userName":   userName,
+			"passWord":   fmt.Sprintf("ZJUT%s", userId[:4]),
+			"profession": profession,
+			"grade":      grade,
+			"class":      class,
+		}
+		service.ReplaceOne(c, utils.MongodbName, utils.Student, filter, user)
 	}
 	utils.ResponseSuccess(c, nil)
 }
@@ -182,14 +193,35 @@ func ImportMark(c *gin.Context) {
 				c.Abort()
 				return
 			}
-			sorce := models.Score{
-				UserId:       userId,
-				AcademicYear: academicYear,
-				ItemName:     itemName,
-				Mark:         int64(value),
+			fliter := bson.M{
+				"userId":       userId,
+				"academicYear": academicYear,
+				"itemName":     itemName,
+			}
+			sorce := bson.M{
+				"userId":       userId,
+				"academicYear": academicYear,
+				"itemName":     itemName,
+				"mark":         int64(value),
 			}
 			// 新增成绩
-			_ = service.InsertOne(c, utils.MongodbName, utils.Score, sorce)
+			service.ReplaceOne(c, utils.MongodbName, utils.Score, fliter, sorce)
 		}
 	}
+	utils.ResponseSuccess(c, nil)
+}
+
+func GetStudentInformation(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+	filter := bson.M{}
+	options := options.Find().SetSort(bson.D{{Key: "_id", Value: 1}})
+	var list []models.Student
+	cursor := service.Find(c, utils.MongodbName, utils.Student, filter, options)
+	if err := cursor.All(context.TODO(), &list); err != nil {
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
+	utils.ResponseSuccess(c, list)
+	return
 }

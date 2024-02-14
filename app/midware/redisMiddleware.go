@@ -3,7 +3,7 @@ package midware
 import (
 	"context"
 	"hr/app/utils"
-	configs "hr/configs/config"
+	configs "hr/configs/configuration"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"

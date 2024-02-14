@@ -6,10 +6,12 @@ import (
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -39,10 +41,16 @@ func AuditOne(c *gin.Context) {
 		return
 	}
 
-	submissionId := c.Param("submissionId")
+	submissionId := c.Query("submissionId")
+	objectId, err := primitive.ObjectIDFromHex(submissionId)
+	if err != nil {
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
 	// 更新状态
 	filter := bson.M{
-		"submissionId": submissionId,
+		"_id": objectId,
 	}
 	modified := bson.M{
 		"$set": bson.M{
@@ -169,23 +177,25 @@ func AuditMany(c *gin.Context) {
 	utils.ResponseSuccess(c, nil)
 }
 
-type getAuditlist struct {
-	Index          int64 `json:"index"`
-	PaginationSize int64 `json:"paginationSize"`
-}
-
 func GetAuditHistory(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	var information getAuditlist
-
-	if err := c.ShouldBindJSON(&information); err != nil {
+	pageParam := c.Query("page")
+	page, err := strconv.Atoi(pageParam)
+	if err != nil {
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
+	limitParam := c.Query("limit")
+	limit, err := strconv.Atoi(limitParam)
+	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
 
 	filter := bson.D{}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((information.Index - 1) * information.PaginationSize).SetLimit(information.PaginationSize)
+	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip((int64(page - 1)) * int64(limit)).SetLimit(int64(limit))
 	result := service.Find(c, utils.MongodbName, utils.SubmitHistory, filter, options)
 
 	var list []models.SubmitHistory

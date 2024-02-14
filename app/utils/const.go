@@ -27,6 +27,6 @@ const (
 
 // Path
 const (
-	Evidence    = "document/evidence"
-	Information = "document/information"
+	Evidence    = "./document/evidence"
+	Information = "./document/information"
 )

@@ -22,13 +22,13 @@ func SetAccessTimeHandler(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	startTime, err := time.Parse(time.RFC1123, accessTime.StartTime)
+	startTime, err := time.Parse("2006-01-02 15:04", accessTime.StartTime)
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
-	endTime, err := time.Parse(time.RFC1123, accessTime.EndTime)
+	endTime, err := time.Parse("2006-01-02 15:04", accessTime.EndTime)
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
 		c.Abort()

@@ -1,10 +1,10 @@
 package models
 
 type Score struct {
-	UserId       string `bson:"_id"`
+	UserId       string `bson:"userId"`
 	AcademicYear string `bson:"academicYear"`
 	ItemName     string `bson:"itemName"`
-	Mark         int64  `bson:"grade"`
+	Mark         int64  `bson:"mark"`
 	Msg          string `bson:"msg"`
 }
 

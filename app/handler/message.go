@@ -7,6 +7,6 @@ import (
 )
 
 func WebSocketConnection(c *gin.Context) {
-	userId := c.Param("userID")
+	userId := c.Param("userId")
 	service.HandleWebSocketConnection(c, userId)
 }

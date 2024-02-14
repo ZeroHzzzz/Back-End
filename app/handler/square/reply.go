@@ -2,6 +2,7 @@ package squarehandler
 
 import (
 	"context"
+	"fmt"
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -21,7 +23,7 @@ type newReplyInformation struct {
 
 func NewReply(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Param("topicId")
+	topicId := c.Query("topicId")
 	var information newReplyInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
@@ -34,6 +36,7 @@ func NewReply(c *gin.Context) {
 	currentUser := service.GetCurrentUser(c)
 	// 新建submission记录
 	newReply := models.Reply{
+		ReplyId:   primitive.NewObjectID(),
 		TopicId:   topicId,
 		ParentId:  information.ParentId,
 		Content:   information.Content,
@@ -47,8 +50,8 @@ func NewReply(c *gin.Context) {
 
 func GetReply(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Param("topicId")
-	pageParam := c.Query("lastview")
+	topicId := c.Query("topicId")
+	pageParam := c.Query("page")
 	page, err := strconv.Atoi(pageParam)
 	limitParam := c.Query("limit")
 	limit, err := strconv.Atoi(limitParam)
@@ -57,11 +60,11 @@ func GetReply(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
+	fmt.Println(topicId)
 	filter := bson.M{
-		"_id": topicId,
+		"topicId": topicId,
 	}
-	options := options.Find().SetSort(bson.D{{Key: "likes", Value: -1}, {Key: "createdAt", Value: -1}}).SetSkip(int64(page) * int64(limit)).SetLimit(int64(limit))
+	options := options.Find().SetSort(bson.D{{Key: "likes", Value: -1}, {Key: "createdAt", Value: -1}}).SetSkip(int64(page-1) * int64(limit)).SetLimit(int64(limit))
 	var Reply []models.Reply
 	cursor := service.Find(c, utils.MongodbName, utils.Reply, filter, options)
 	if err := cursor.All(context.TODO(), &Reply); err != nil {

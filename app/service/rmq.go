@@ -3,8 +3,9 @@ package service
 import (
 	"fmt"
 	"hr/app/utils"
-	configs "hr/configs/config"
+	configs "hr/configs/configuration"
 	"hr/configs/models"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/streadway/amqp"
@@ -18,38 +19,43 @@ func Initrmq(c *gin.Context) *models.RabbitMQMiddleware {
 
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s", rabbitMQuser, rabbitMQpassword, rabbitMQurl))
 	if err != nil {
-		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, err.Error()))
-		c.Abort()
+		log.Printf("连接 RabbitMQ 失败：%v\n", err)
+		return nil
 	}
 	ch, err := conn.Channel()
 	if err != nil {
 		conn.Close()
-		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, err.Error()))
-		c.Abort()
+		log.Printf("创建 RabbitMQ 通道失败：%v\n", err)
+		return nil
 	}
-	// 声明交换机
-	// 用户信息交换机
-	DeclareExchange(c, utils.UserExchange, "direct")
-	// 全局信息交换机
-	DeclareExchange(c, utils.GlobalExchange, "fanout")
-
 	return &models.RabbitMQMiddleware{
 		Connection: conn,
 		Channel:    ch,
 	}
-
 }
 
-func Closermq(r *models.RabbitMQMiddleware) {
-	if r != nil {
-		r.Channel.Close()
-		r.Connection.Close()
+func Closermq(rmq *models.RabbitMQMiddleware) {
+	if rmq == nil {
+		return
+	}
+	if rmq.Channel != nil {
+		rmq.Channel.Close()
+	}
+	if rmq.Connection != nil {
+		rmq.Connection.Close()
 	}
 }
 
 // rmq
 func DeclareQueue(c *gin.Context, queueName string) amqp.Queue {
 	r := GetRabbitMQMiddle(c)
+	if r == nil || r.Channel == nil {
+		fmt.Println("没有上下文噢")
+		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, "RabbitMQ client or channel is nil"))
+		c.Abort()
+		return amqp.Queue{} // 返回一个零值队列，或者根据实际情况返回适当的值
+	}
+
 	q, err := r.Channel.QueueDeclare(
 		queueName, // name
 		true,      // durable
@@ -59,8 +65,10 @@ func DeclareQueue(c *gin.Context, queueName string) amqp.Queue {
 		nil,       // arguments
 	)
 	if err != nil {
-		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, err.Error()))
+		log.Printf("声明队列失败：%v\n", err)
+		c.Error(utils.GetError(utils.RMQ_DECLARE_QUEUE_ERROR, err.Error()))
 		c.Abort()
+		return amqp.Queue{} // 返回一个零值队列，或者根据实际情况返回适当的值
 	}
 	return q
 }
@@ -68,6 +76,12 @@ func DeclareQueue(c *gin.Context, queueName string) amqp.Queue {
 func DeclareExchange(c *gin.Context, exchangeName, kind string) {
 	// 声明交换机
 	r := GetRabbitMQMiddle(c)
+	if r == nil || r.Channel == nil {
+		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, "RabbitMQ client or channel is nil"))
+		c.Abort()
+		return
+	}
+
 	err := r.Channel.ExchangeDeclare(
 		exchangeName,
 		kind,
@@ -78,25 +92,32 @@ func DeclareExchange(c *gin.Context, exchangeName, kind string) {
 		nil,
 	)
 	if err != nil {
-		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, err.Error()))
+		log.Printf("声明交换机失败：%v\n", err)
+		c.Error(utils.GetError(utils.RMQ_DECLARE_EXCHANGE_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
 }
 
-func BindQueue(c *gin.Context, queueName, routeKey, exchangeName string) {
+func BindQueue(c *gin.Context, queueName, routingKey, exchangeName string) {
 	r := GetRabbitMQMiddle(c)
-	err := r.Channel.QueueBind(
-		queueName,
-		routeKey,
-		exchangeName,
-		false,
-		nil,
-	)
-	if err != nil {
-		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, err.Error()))
+	if r == nil || r.Channel == nil {
+		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, "RabbitMQ client or channel is nil"))
 		c.Abort()
 		return
+	}
+
+	err := r.Channel.QueueBind(
+		queueName,    // queue name
+		routingKey,   // routing key
+		exchangeName, // exchange name
+		false,        // no-wait
+		nil,          // arguments
+	)
+	if err != nil {
+		log.Printf("交换机绑定队列失败：%v\n", err)
+		c.Error(utils.GetError(utils.RMQ_BIND_QUEUE_ERROR, err.Error()))
+		c.Abort()
 	}
 }
 
@@ -113,7 +134,8 @@ func ConsumeMessage(c *gin.Context, queueName string) <-chan amqp.Delivery {
 		nil,       // 其他参数
 	)
 	if err != nil {
-		c.Error(utils.GetError(utils.RMQ_INIT_ERROR, err.Error()))
+		log.Printf("消费信息失败：%v\n", err)
+		c.Error(utils.GetError(utils.RMQ_DECLARE_CONSUMER_ERROR, err.Error()))
 		c.Abort()
 		return nil
 	}
@@ -140,7 +162,8 @@ func PublishMessage(c *gin.Context, exchangeName, queueName, message string) {
 		},
 	)
 	if err != nil {
-		c.Error(utils.GetError(utils.QUEUE_OPERATION_ERROR, err.Error()))
+		log.Printf("发送信息失败：%v\n", err)
+		c.Error(utils.GetError(utils.RMQ_PUBLISH_ERROR, err.Error()))
 		c.Abort()
 		return
 	}

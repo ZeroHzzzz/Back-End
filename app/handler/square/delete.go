@@ -6,17 +6,24 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func DeleteTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Param("topicId")
+	topicId := c.Query("topicId")
+	objectId, err := primitive.ObjectIDFromHex(topicId)
+	if err != nil {
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
 	// 从上下文中获取用户信息
 	currentUser := service.GetCurrentUser(c)
 	// 辅导员拥有删除文章的能力
 	if currentUser.Role == "counsellor" {
 		filter := bson.M{
-			"_id": topicId,
+			"_id": objectId,
 		}
 		_ = service.DeleteOne(c, utils.MongodbName, utils.Topic, filter)
 		// 删除评论
@@ -27,7 +34,7 @@ func DeleteTopic(c *gin.Context) {
 
 	} else if currentUser.Role == "student" {
 		filter := bson.M{
-			"_id":      topicId,
+			"_id":      objectId,
 			"autherID": currentUser.UserId,
 		}
 		_ = service.DeleteOne(c, utils.MongodbName, utils.Topic, filter)
@@ -47,17 +54,22 @@ func DeleteReply(c *gin.Context) {
 	// 还有另外一个漏洞就是，删除评论并不能删除全部的子评论，比如子评论的子评论就删除不了，但是在前端不会显示出来(因为没有父评论)
 	// 因此目前只有完全删除文章才能删除全部的评论释放空间
 	c.Header("Content-Type", "application/json")
-	replyID := c.Param("replyID")
-
+	replyId := c.Query("replyId")
+	objectId, err := primitive.ObjectIDFromHex(replyId)
+	if err != nil {
+		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
 	// 从上下文中获取mongo客户端
 
 	filter := bson.M{
-		"replyID": replyID,
+		"_id": objectId,
 	}
 	_ = service.DeleteOne(c, utils.MongodbName, utils.Reply, filter)
 
 	filter = bson.M{
-		"parentID": replyID,
+		"parentID": replyId,
 	}
 	// 删除子评论
 	_ = service.DeleteMany(c, utils.MongodbName, utils.Reply, filter)

@@ -1,6 +1,7 @@
 package studenthandler
 
 import (
+	"context"
 	"hr/app/service"
 	"hr/app/utils"
 	"hr/configs/models"
@@ -12,23 +13,22 @@ import (
 func GetConcreteSorce(c *gin.Context) {
 	// 上传申报
 	c.Header("Content-Type", "application/json")
-	userId := c.Param("userId")
-	academicYear := c.Param("academicYear")
-
+	userId := c.Query("userId")
+	academicYear := c.Query("academicYear")
 	// 从上下文中获取mongo客户端
 	filter := bson.M{
-		"_id":          userId,
-		"academicTear": academicYear,
+		"userId":       userId,
+		"academicYear": academicYear,
 	}
 
-	var result models.Score
-	err := service.FindOne(c, utils.MongodbName, utils.Score, filter).Decode(&result)
-	if err != nil {
+	var score []models.Score
+	result := service.Find(c, utils.MongodbName, utils.Score, filter)
+	if err := result.All(context.TODO(), &score); err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
-	utils.ResponseSuccess(c, result)
+	utils.ResponseSuccess(c, score)
 }
 
 // func GetYearScoreHandler(c *gin.Context) {
