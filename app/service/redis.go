@@ -21,7 +21,7 @@ func GetTopicViewsALikes(c *gin.Context, topicID string) (int64, int64) {
 	var topic models.Topic
 	result := FindOne(c, utils.MongodbName, utils.Topic, filter)
 	if result.Err() != nil {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, result.Err().Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, result.Err().Error()))
 		return -1, -1
 	}
 	decodeErr := result.Decode(&topic)

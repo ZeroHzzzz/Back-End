@@ -20,7 +20,7 @@ func UpdateOne(c *gin.Context, databaseName, collectionName string, filter, modi
 	updateResult, err := collection.UpdateOne(context.Background(), filter, modified, opt)
 	// 如果没有合适的修改也会抛出错误
 	if err != nil || updateResult.ModifiedCount == 0 {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, "UpdateOne Failed"))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, "UpdateOne Failed"))
 		c.Abort()
 		return nil
 	}
@@ -33,7 +33,7 @@ func UpdateMany(c *gin.Context, databaseName, collectionName string, filter, mod
 	collection := database.Collection(collectionName)
 	updateResult, err := collection.UpdateMany(context.Background(), filter, modified)
 	if err != nil {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, err.Error()))
 		c.Abort()
 		return nil
 	}
@@ -47,7 +47,7 @@ func InsertOne(c *gin.Context, databaseName, collectionName string, document int
 	collection := database.Collection(collectionName)
 	insertOneResult, err := collection.InsertOne(context.Background(), document)
 	if err != nil {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, err.Error()))
 		c.Abort()
 		return nil
 	}
@@ -64,7 +64,7 @@ func InsertMany(c *gin.Context, databaseName, collectionName string, document []
 		failureCount := len(document) - successCount
 		msg := fmt.Sprintf("Inserted %d , failed %d", successCount, failureCount)
 
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, msg))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, msg))
 		c.Abort()
 		return nil
 	}
@@ -78,7 +78,7 @@ func FindOne(c *gin.Context, databaseName, collectionName string, filter interfa
 	collection := database.Collection(collectionName)
 	cursor := collection.FindOne(c, filter)
 	if cursor.Err() != nil {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, cursor.Err().Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, cursor.Err().Error()))
 		c.Abort()
 		return nil
 	}
@@ -92,7 +92,7 @@ func Find(c *gin.Context, databaseName, collectionName string, filter interface{
 	fo := options.MergeFindOptions(opts...)
 	cursor, err := collection.Find(context.Background(), filter, fo)
 	if err != nil {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, err.Error()))
 		c.Abort()
 		return nil
 	}
@@ -106,7 +106,7 @@ func DeleteOne(c *gin.Context, databaseName, collectionName string, filter inter
 	collection := database.Collection(collectionName)
 	cursor, err := collection.DeleteOne(context.Background(), filter)
 	if err != nil {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, err.Error()))
 		c.Abort()
 		return nil
 	}
@@ -119,7 +119,7 @@ func DeleteMany(c *gin.Context, databaseName, collectionName string, filter inte
 	collection := database.Collection(collectionName)
 	cursor, err := collection.DeleteMany(context.Background(), filter)
 	if err != nil {
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, err.Error()))
 		c.Abort()
 		return nil
 	}
@@ -136,7 +136,7 @@ func ReplaceOne(c *gin.Context, databaseName, collectionName string, filter inte
 	replaceResult, err := collection.ReplaceOne(context.Background(), filter, replacement, opts)
 	if err != nil {
 		// 如果发生错误，返回错误并终止处理
-		c.Error(utils.GetError(utils.DATABASE_OPERATION_ERROR, err.Error()))
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, err.Error()))
 		c.Abort()
 		return nil
 	}
