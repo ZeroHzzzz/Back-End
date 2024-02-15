@@ -44,7 +44,7 @@ func NewReply(c *gin.Context) {
 		CreateAt: time.Now().Unix(),
 	}
 	_ = service.InsertOne(c, utils.MongodbName, utils.Reply, newReply)
-	service.PublishMessage(c, utils.UserExchange, information.ParentID, utils.Reply2you) // 发布信息
+	service.PublishMessage(c, utils.UserExchange, information.ParentID, fmt.Sprintf("%s %s", currentUser.UserID, utils.Reply2you)) // 发布信息
 	utils.ResponseSuccess(c, nil)
 }
 
