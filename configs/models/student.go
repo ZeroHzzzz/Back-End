@@ -1,12 +1,12 @@
 package models
 
 type Student struct {
-	UserId     string `bson:"_id"`
-	UserName   string `bson:"userName"`
-	PassWord   string `bson:"passWord"`
-	Class      string `bson:"class"`
-	Profession string `bson:"profession"`
-	Grade      string `bson:"grade"` // 这里是年级
+	UserID     string `bson:"_id"`
+	UserName   string `bson:"UserName"`
+	PassWord   string `bson:"PassWord"`
+	Class      string `bson:"Class"`
+	Profession string `bson:"Profession"`
+	Grade      string `bson:"Grade"` // 这里是年级
 	// Mark       map[string]int `bson:"mark"`
 }
 

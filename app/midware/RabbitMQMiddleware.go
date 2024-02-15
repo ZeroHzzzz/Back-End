@@ -28,7 +28,7 @@ func GetRabbitMQMiddleware() gin.HandlerFunc {
 
 		// currentUser
 		currentUser := service.GetCurrentUser(c)
-		service.DeclareQueue(c, currentUser.UserId) // 声明队列
+		service.DeclareQueue(c, currentUser.UserID) // 声明队列
 		// 声明交换机
 		// 用户信息交换机
 		service.DeclareExchange(c, utils.UserExchange, "direct")
@@ -36,9 +36,9 @@ func GetRabbitMQMiddleware() gin.HandlerFunc {
 		service.DeclareExchange(c, utils.GlobalExchange, "fanout")
 
 		// 绑定系统交换机
-		service.BindQueue(c, currentUser.UserId, "", utils.GlobalExchange)
+		service.BindQueue(c, currentUser.UserID, "", utils.GlobalExchange)
 		// 绑定用户交换机
-		service.BindQueue(c, currentUser.UserId, currentUser.UserId, utils.UserExchange)
+		service.BindQueue(c, currentUser.UserID, currentUser.UserID, utils.UserExchange)
 		c.Next()
 	}
 }

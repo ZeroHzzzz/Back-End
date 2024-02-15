@@ -1,29 +1,27 @@
 package models
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SubmitInformation struct {
 	CurrentUser  `bson:"currentUser"`
-	ItemName     string    `bson:"itemName"`
-	ItemValue    int64     `bson:"itemValue"`
-	AcademicYear string    `bson:"academicYear"`
-	Msg          string    `bson:"msg,omitempty"` // 这个是提交的项目描述
-	Evidence     []string  `bson:"evidence,omitempty"`
-	AduiterId    string    `bson:"aduiterId,omitempty"`
-	Status       bool      `bson:"status"`
-	Cause        string    `bson:"cause,omitempty"`
-	Advice       string    `bson:"advice,omitempty"`
-	CreateAt     time.Time `bson:"create_at"`
+	ItemName     string   `bson:"ItemName"`
+	ItemValue    int64    `bson:"ItemValue"`
+	AcademicYear string   `bson:"AcademicYear"`
+	Msg          string   `bson:"Msg,omitempty"` // 这个是提交的项目描述
+	Evidence     []string `bson:"Evidence,omitempty"`
+	AduiterID    string   `bson:"AduiterID,omitempty"`
+	Status       bool     `bson:"Status"`
+	Cause        string   `bson:"Cause,omitempty"`
+	Advice       string   `bson:"Advice,omitempty"`
+	CreateAt     int64    `bson:"CreateAt"`
 }
 
 type SubmitHistory struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
-	SubmissionId string             `bson:"submissionId"`
-	AuditorId    string             `bson:"auditorId"` // 审核人
-	Message      string             `bson:"message"`
-	CreateAt     time.Time          `bson:"create_at"`
+	SubmissionID string             `bson:"SubmissionID"`
+	AuditorID    string             `bson:"AuditorID"` // 审核人
+	Message      string             `bson:"Message"`
+	CreateAt     int64              `bson:"CreateAt"`
 }

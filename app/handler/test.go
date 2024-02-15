@@ -11,7 +11,7 @@ import (
 func Test(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	counsellor := models.Counsellor{
-		UserId:     "admin",
+		UserID:     "admin",
 		UserName:   "Stack",
 		PassWord:   "admin",
 		Grade:      "大一",

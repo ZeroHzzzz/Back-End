@@ -17,13 +17,13 @@ import (
 
 // 新评论
 type newReplyInformation struct {
-	ParentId string `json:"parentId"`
-	Content  string `json:"content"`
+	ParentID string `json:"ParentID"`
+	Content  string `json:"Content"`
 }
 
 func NewReply(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Query("topicId")
+	topicID := c.Query("TopicID")
 	var information newReplyInformation
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
@@ -36,35 +36,40 @@ func NewReply(c *gin.Context) {
 	currentUser := service.GetCurrentUser(c)
 	// 新建submission记录
 	newReply := models.Reply{
-		ReplyId:   primitive.NewObjectID(),
-		TopicId:   topicId,
-		ParentId:  information.ParentId,
-		Content:   information.Content,
-		AutherId:  currentUser.UserId,
-		CreatedAt: time.Now(),
+		ReplyID:  primitive.NewObjectID(),
+		TopicID:  topicID,
+		ParentID: information.ParentID,
+		Content:  information.Content,
+		AutherID: currentUser.UserID,
+		CreateAt: time.Now().Unix(),
 	}
 	_ = service.InsertOne(c, utils.MongodbName, utils.Reply, newReply)
-	service.PublishMessage(c, utils.UserExchange, information.ParentId, utils.Reply2you) // 发布信息
+	service.PublishMessage(c, utils.UserExchange, information.ParentID, utils.Reply2you) // 发布信息
 	utils.ResponseSuccess(c, nil)
 }
 
 func GetReply(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Query("topicId")
-	pageParam := c.Query("page")
+	topicID := c.Query("TopicID")
+	pageParam := c.Query("Page")
 	page, err := strconv.Atoi(pageParam)
-	limitParam := c.Query("limit")
+	if err != nil {
+		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
+		c.Abort()
+		return
+	}
+	limitParam := c.Query("Limit")
 	limit, err := strconv.Atoi(limitParam)
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
-	fmt.Println(topicId)
+	fmt.Println(topicID)
 	filter := bson.M{
-		"topicId": topicId,
+		"TopicID": topicID,
 	}
-	options := options.Find().SetSort(bson.D{{Key: "likes", Value: -1}, {Key: "createdAt", Value: -1}}).SetSkip(int64(page-1) * int64(limit)).SetLimit(int64(limit))
+	options := options.Find().SetSort(bson.D{{Key: "Likes", Value: -1}, {Key: "CreateAt", Value: -1}}).SetSkip(int64(page-1) * int64(limit)).SetLimit(int64(limit))
 	var Reply []models.Reply
 	cursor := service.Find(c, utils.MongodbName, utils.Reply, filter, options)
 	if err := cursor.All(context.TODO(), &Reply); err != nil {

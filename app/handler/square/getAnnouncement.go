@@ -14,7 +14,7 @@ import (
 func GetAnnouncement(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	filter := bson.M{}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetLimit(5)
+	options := options.Find().SetSort(bson.D{{Key: "CreateAt", Value: -1}}).SetLimit(5)
 	// 找五条最新的
 	var list []counsellorhandler.Announcement
 	cursor := service.Find(c, utils.MongodbName, utils.Announcement, filter, options)
@@ -24,5 +24,4 @@ func GetAnnouncement(c *gin.Context) {
 		return
 	}
 	utils.ResponseSuccess(c, list)
-	return
 }

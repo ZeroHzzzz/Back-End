@@ -13,12 +13,12 @@ import (
 func GetConcreteSorce(c *gin.Context) {
 	// 上传申报
 	c.Header("Content-Type", "application/json")
-	userId := c.Query("userId")
-	academicYear := c.Query("academicYear")
+	userID := c.Query("UserID")
+	academicYear := c.Query("AcademicYear")
 	// 从上下文中获取mongo客户端
 	filter := bson.M{
-		"userId":       userId,
-		"academicYear": academicYear,
+		"UserID":       userID,
+		"AcademicYear": academicYear,
 	}
 
 	var score []models.Score
@@ -32,13 +32,13 @@ func GetConcreteSorce(c *gin.Context) {
 }
 
 // func GetYearScoreHandler(c *gin.Context) {
-// 	// 传入userId，在student库中查找出对应的学生信息，返回map[string]int类型grade
+// 	// 传入userID，在student库中查找出对应的学生信息，返回map[string]int类型grade
 // 	// 上传申报
 // 	c.Header("Content-Type", "application/json")
-// 	userId := c.Param("userId")
+// 	userID := c.Param("userID")
 
 // 	filter := bson.M{
-// 		"userId": userId,
+// 		"userID": userID,
 // 	}
 
 // 	var student models.Student

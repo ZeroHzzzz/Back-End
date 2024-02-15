@@ -11,8 +11,8 @@ import (
 
 func DeleteTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Query("topicId")
-	objectId, err := primitive.ObjectIDFromHex(topicId)
+	topicID := c.Query("TopicID")
+	objectID, err := primitive.ObjectIDFromHex(topicID)
 	if err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
@@ -21,26 +21,26 @@ func DeleteTopic(c *gin.Context) {
 	// 从上下文中获取用户信息
 	currentUser := service.GetCurrentUser(c)
 	// 辅导员拥有删除文章的能力
-	if currentUser.Role == "counsellor" {
+	if currentUser.Role == "Counsellor" {
 		filter := bson.M{
-			"_id": objectId,
+			"_id": objectID,
 		}
 		_ = service.DeleteOne(c, utils.MongodbName, utils.Topic, filter)
 		// 删除评论
 		filter = bson.M{
-			"topicId": topicId,
+			"TopicID": topicID,
 		}
 		_ = service.DeleteMany(c, utils.MongodbName, utils.Reply, filter)
 
-	} else if currentUser.Role == "student" {
+	} else if currentUser.Role == "Student" {
 		filter := bson.M{
-			"_id":      objectId,
-			"autherID": currentUser.UserId,
+			"_id":      objectID,
+			"AutherID": currentUser.UserID,
 		}
 		_ = service.DeleteOne(c, utils.MongodbName, utils.Topic, filter)
 
 		filter = bson.M{
-			"topicId": topicId,
+			"TopicID": topicID,
 		}
 		_ = service.DeleteMany(c, utils.MongodbName, utils.Reply, filter)
 
@@ -54,8 +54,8 @@ func DeleteReply(c *gin.Context) {
 	// 还有另外一个漏洞就是，删除评论并不能删除全部的子评论，比如子评论的子评论就删除不了，但是在前端不会显示出来(因为没有父评论)
 	// 因此目前只有完全删除文章才能删除全部的评论释放空间
 	c.Header("Content-Type", "application/json")
-	replyId := c.Query("replyId")
-	objectId, err := primitive.ObjectIDFromHex(replyId)
+	replyID := c.Query("ReplyID")
+	objectID, err := primitive.ObjectIDFromHex(replyID)
 	if err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
@@ -64,12 +64,12 @@ func DeleteReply(c *gin.Context) {
 	// 从上下文中获取mongo客户端
 
 	filter := bson.M{
-		"_id": objectId,
+		"_id": objectID,
 	}
 	_ = service.DeleteOne(c, utils.MongodbName, utils.Reply, filter)
 
 	filter = bson.M{
-		"parentID": replyId,
+		"ParentID": replyID,
 	}
 	// 删除子评论
 	_ = service.DeleteMany(c, utils.MongodbName, utils.Reply, filter)

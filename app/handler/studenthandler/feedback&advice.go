@@ -9,9 +9,9 @@ import (
 )
 
 type information struct {
-	UserId   string `json:"userId"`
-	Category string `json:"category"`
-	Content  string `json:"content"`
+	UserID   string `json:"UserID"`
+	Category string `json:"Vategory"`
+	Content  string `json:"Content"`
 }
 
 func FeedbackOAdvice(c *gin.Context) {
@@ -25,7 +25,7 @@ func FeedbackOAdvice(c *gin.Context) {
 	}
 	newFeeback := models.Feedback{
 		Category: information.Category,
-		UserId:   information.UserId,
+		UserID:   information.UserID,
 		Content:  information.Content,
 		Status:   false,
 	}
@@ -44,7 +44,7 @@ func FeedbackOAdvice(c *gin.Context) {
 // 	}
 // 	newFeeback := models.Feedback{
 // 		Category: information.Category,
-// 		UserId:   information.UserId,
+// 		UserID:   information.UserID,
 // 		Content:  information.Content,
 // 		Status:   false,
 // 	}

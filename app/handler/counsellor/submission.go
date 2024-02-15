@@ -13,21 +13,21 @@ import (
 )
 
 type getSubmissionListInformation struct {
-	Profession string `json:"profession"`
-	Grade      string `json:"grade"` //年级
-	Class      string `json:"class"`
+	Profession string `json:"Profession"`
+	Grade      string `json:"Grade"` //年级
+	Class      string `json:"Class"`
 }
 
 func GetSubmissionList(c *gin.Context) {
 	var getsubmissionlistinformation getSubmissionListInformation
-	pageParam := c.Query("page")
+	pageParam := c.Query("Page")
 	page, err := strconv.Atoi(pageParam)
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
-	limitParam := c.Query("limit")
+	limitParam := c.Query("Limit")
 	limit, err := strconv.Atoi(limitParam)
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
@@ -51,17 +51,17 @@ func GetSubmissionList(c *gin.Context) {
 	// 	"grade":      getsubmissionlistinformation.Grade,
 	// 	"status":     false,
 	// }
-	filter := bson.M{"status": false}
+	filter := bson.M{"Status": false}
 	if getsubmissionlistinformation.Class != "" {
-		filter["class"] = getsubmissionlistinformation.Class
+		filter["Class"] = getsubmissionlistinformation.Class
 	}
 	if getsubmissionlistinformation.Profession != "" {
-		filter["profession"] = getsubmissionlistinformation.Profession
+		filter["Profession"] = getsubmissionlistinformation.Profession
 	}
 	if getsubmissionlistinformation.Grade != "" {
-		filter["grade"] = getsubmissionlistinformation.Grade
+		filter["Grade"] = getsubmissionlistinformation.Grade
 	}
-	options := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(int64((page - 1) * limit)).SetLimit(int64(limit))
+	options := options.Find().SetSort(bson.D{{Key: "CreateAt", Value: -1}}).SetSkip(int64((page - 1) * limit)).SetLimit(int64(limit))
 
 	// 执行查询
 	cursor := service.Find(c, utils.MongodbName, utils.Submission, filter, options)
@@ -76,9 +76,9 @@ func GetSubmissionList(c *gin.Context) {
 func GetSubmission(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
-	submissionId := c.Param("submissionId")
+	submissionID := c.Param("SubmissionID")
 
-	filter := bson.M{"submissionId": submissionId}
+	filter := bson.M{"SubmissionID": submissionID}
 	result := service.FindOne(c, utils.MongodbName, utils.Submission, filter)
 
 	var submission models.SubmitInformation

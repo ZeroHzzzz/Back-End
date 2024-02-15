@@ -39,23 +39,23 @@ func Init(r *gin.Engine) {
 	}
 	api := r.Group("/api", midware.ErrorHandler(), midware.MongoClientMiddleware())
 	{
-		api.GET("/ws/:userId", handler.WebSocketConnection)
+		api.GET("/ws/:UserID", handler.WebSocketConnection)
 		student := api.Group("/student", midware.JWTAuthMiddleware("Counsellor", "Student"), midware.GetRabbitMQMiddleware(), midware.RedisClientMiddleware())
 		{
-			student.PUT("/profile/:userId", studenthandler.ModifiedProfileHandler)
+			student.PUT("/profile/:UserID", studenthandler.ModifiedProfileHandler)
 			student.POST("/feedbackOradvice", studenthandler.FeedbackOAdvice)
 			student.GET("/score", studenthandler.GetConcreteSorce)
 			submit := student.Group("/submit")
 			{
-				submit.POST("/:userId", studenthandler.Submission)
-				submit.GET("/status/:formID", studenthandler.GetSubmissionStatus)
+				submit.POST("/:UserID", studenthandler.Submission)
+				submit.GET("/status/:SubmissionID", studenthandler.GetSubmissionStatus)
 				submit.GET("/list", studenthandler.GetSubmissionStatus)
 			}
 		}
 		counsellor := api.Group("/counsellor", midware.JWTAuthMiddleware("Counsellor"), midware.GetRabbitMQMiddleware(), midware.RedisClientMiddleware())
 		{
-			counsellor.POST("/:counsellorId/cause", counsellorhandler.AddCause)
-			counsellor.GET("/:counsellorId/cause", counsellorhandler.GetCause)
+			counsellor.POST("/:CounsellorID/cause", counsellorhandler.AddCause)
+			counsellor.GET("/:CounsellorID/cause", counsellorhandler.GetCause)
 			counsellor.POST("/access-time", counsellorhandler.SetAccessTimeHandler)
 			counsellor.POST("/setannouncement", counsellorhandler.SetAnnouncement)
 			audit := counsellor.Group("/audit")
@@ -64,11 +64,11 @@ func Init(r *gin.Engine) {
 				audit.PUT("/review/single", counsellorhandler.AuditOne)
 				audit.PUT("/review/bulk", counsellorhandler.AuditMany)
 				audit.GET("/history", counsellorhandler.GetAuditHistory)
-				// audit.PUT("/remake/:submissionId", counsellorhandler.)
+				// audit.PUT("/remake/:submissionID", counsellorhandler.)
 			}
 			information := counsellor.Group("/information")
 			{
-				information.PUT("/correct/:userID", counsellorhandler.CorrectGrade)
+				information.PUT("/correct/:UserID", counsellorhandler.CorrectGrade)
 				information.POST("/bulk-import/student", counsellorhandler.ImportStudent)
 				information.POST("/bulk-import/counsellor", counsellorhandler.ImportCounsellor)
 				information.POST("/bulk-import/mark", counsellorhandler.ImportMark)

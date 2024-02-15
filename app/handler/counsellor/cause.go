@@ -11,11 +11,11 @@ import (
 )
 
 type addCause struct {
-	Msg string `json:"msg"`
+	Msg string `json:"Msg"`
 }
 
 func AddCause(c *gin.Context) {
-	userId := c.Param("counsellorId")
+	userID := c.Param("CounsellorID")
 	var information addCause
 	if err := c.BindJSON(&information); err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
@@ -23,7 +23,7 @@ func AddCause(c *gin.Context) {
 		return
 	}
 	newCause := models.Cause{
-		UserId: userId,
+		UserID: userID,
 		Msg:    information.Msg,
 	}
 	_ = service.InsertOne(c, utils.MongodbName, utils.Cause, newCause)
@@ -31,9 +31,9 @@ func AddCause(c *gin.Context) {
 }
 
 func GetCause(c *gin.Context) {
-	userId := c.Param("counsellorId")
+	userID := c.Param("CounsellorID")
 	filter := bson.M{
-		"_id": userId,
+		"_id": userID,
 	}
 	var list []models.Cause
 	cursor := service.Find(c, utils.MongodbName, utils.Cause, filter)

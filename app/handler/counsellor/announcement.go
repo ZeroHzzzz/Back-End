@@ -9,13 +9,13 @@ import (
 )
 
 type announcement struct {
-	Content string `json:"content"`
+	Content string `json:"Content"`
 }
 
 type Announcement struct {
-	AutherID string    `bson:"autherID"`
-	Content  string    `json:"content"`
-	CreateAt time.Time `bson:"createdAt"`
+	AutherID string    `bson:"AutherID"`
+	Content  string    `bson:"Content"`
+	CreateAt time.Time `bson:"CreateAt"`
 }
 
 func SetAnnouncement(c *gin.Context) {
@@ -28,11 +28,10 @@ func SetAnnouncement(c *gin.Context) {
 	}
 	currentUser := service.GetCurrentUser(c)
 	newAnnouncement := Announcement{
-		AutherID: currentUser.UserId,
+		AutherID: currentUser.UserID,
 		Content:  information.Content,
 	}
 	_ = service.InsertOne(c, utils.MongodbName, utils.Announcement, newAnnouncement)
 	service.PublishMessage(c, utils.GlobalExchange, "", currentUser.UserName+utils.Announcement+": "+information.Content) // 发布信息 用扇out交换机
 	utils.ResponseSuccess(c, nil)
-	return
 }

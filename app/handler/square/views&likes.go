@@ -11,15 +11,15 @@ import (
 )
 
 type response struct {
-	View int64 `json:"view"`
-	Like int64 `json:"like"`
+	View int64 `json:"View"`
+	Like int64 `json:"Like"`
 }
 
 func GetViewsAndlikes(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Query("topicId")
-	fmt.Println(topicId)
-	views, likes := service.GetTopicViewsALikes(c, topicId)
+	topicID := c.Query("TopicID")
+	fmt.Println(topicID)
+	views, likes := service.GetTopicViewsALikes(c, topicID)
 
 	utils.ResponseSuccess(c, &response{
 		View: views,
@@ -29,19 +29,19 @@ func GetViewsAndlikes(c *gin.Context) {
 
 func LikesTopic(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	topicId := c.Query("topicId")
-	objectId, err := primitive.ObjectIDFromHex(topicId)
+	topicID := c.Query("TopicID")
+	objectID, err := primitive.ObjectIDFromHex(topicID)
 	if err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
 	filter := bson.M{
-		"_id": objectId,
+		"_id": objectID,
 	}
 	modified := bson.M{
 		"$inc": bson.M{
-			"likes": 1,
+			"Likes": 1,
 		},
 	}
 	// 增加
@@ -51,19 +51,19 @@ func LikesTopic(c *gin.Context) {
 
 func LikeReply(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	replyId := c.Query("replyId")
-	objectId, err := primitive.ObjectIDFromHex(replyId)
+	replyID := c.Query("ReplyID")
+	objectID, err := primitive.ObjectIDFromHex(replyID)
 	if err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
 	filter := bson.M{
-		"_id": objectId,
+		"_id": objectID,
 	}
 	modified := bson.M{
 		"$inc": bson.M{
-			"likes": 1,
+			"Likes": 1,
 		},
 	}
 	// 增加

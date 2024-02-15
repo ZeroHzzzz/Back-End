@@ -14,20 +14,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const savePath = utils.Information
 const maxSizeLimit = 20
 
 type information struct {
-	ItemName     string `json:"itemName"`
-	AcademicYear string `json:"academicYear"`
-	CorrectGrade string `json:"correctGrade"`
+	ItemName     string `json:"ItemName"`
+	AcademicYear string `json:"AcademicYear"`
+	CorrectGrade string `json:"CorrectGrade"`
 }
 
 // 改正成绩的
 func CorrectGrade(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	var information information
-	userId := c.Param("userID")
+	userID := c.Param("UserID")
 	err := c.ShouldBindJSON(&information)
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
@@ -35,13 +34,13 @@ func CorrectGrade(c *gin.Context) {
 		return
 	}
 	filter := bson.M{
-		"_id":          userId,
-		"academicYear": information.AcademicYear,
-		"itemName":     information.ItemName,
+		"_id":          userID,
+		"AcademicYear": information.AcademicYear,
+		"ItemName":     information.ItemName,
 	}
 	modified := bson.M{
 		"$set": bson.M{
-			"grade": information.CorrectGrade,
+			"Grade": information.CorrectGrade,
 		},
 	}
 	_ = service.UpdateOne(c, utils.MongodbName, utils.Score, filter, modified)
@@ -58,7 +57,7 @@ func ImportCounsellor(c *gin.Context) {
 	}
 
 	// 获取上传的文件
-	file, _, err := c.Request.FormFile("file")
+	file, _, err := c.Request.FormFile("File")
 	if err != nil {
 		c.Error(utils.GetError(utils.FILE_ERROR, err.Error()))
 		c.Abort()
@@ -79,18 +78,18 @@ func ImportCounsellor(c *gin.Context) {
 		return
 	} // 表头
 	for _, row := range rows[1:] { // 切片，去除表头
-		userId := row[0]
+		userID := row[0]
 		userName := row[1]
 		grade := row[2]
 		profession := row[3]
 		fliter := bson.M{
-			"_id": userId,
+			"_id": userID,
 		}
 		user := bson.M{
-			"_id":        userId,
-			"userName":   userName,
-			"grade":      grade,
-			"profession": profession,
+			"_id":        userID,
+			"UserName":   userName,
+			"Grade":      grade,
+			"Profession": profession,
 		}
 		service.ReplaceOne(c, utils.MongodbName, utils.Counsellor, fliter, user)
 	}
@@ -107,7 +106,7 @@ func ImportStudent(c *gin.Context) {
 	}
 
 	// 获取上传的文件
-	file, _, err := c.Request.FormFile("file")
+	file, _, err := c.Request.FormFile("File")
 	if err != nil {
 		c.Error(utils.GetError(utils.FILE_ERROR, err.Error()))
 		c.Abort()
@@ -128,21 +127,21 @@ func ImportStudent(c *gin.Context) {
 		return
 	}
 	for _, row := range rows[1:] { // 切片，去除表头
-		userId := row[0]
+		userID := row[0]
 		userName := row[1]
 		grade := row[2]
 		profession := row[3]
 		class := row[4]
 		filter := bson.M{
-			"_id": userId,
+			"_id": userID,
 		}
 		user := bson.M{
-			"_id":        userId,
-			"userName":   userName,
-			"passWord":   fmt.Sprintf("ZJUT%s", userId[:4]),
-			"profession": profession,
-			"grade":      grade,
-			"class":      class,
+			"_id":        userID,
+			"UserName":   userName,
+			"PassWord":   fmt.Sprintf("ZJUT%s", userID[:4]),
+			"Profession": profession,
+			"Grade":      grade,
+			"Class":      class,
 		}
 		service.ReplaceOne(c, utils.MongodbName, utils.Student, filter, user)
 	}
@@ -159,7 +158,7 @@ func ImportMark(c *gin.Context) {
 	}
 
 	// 获取上传的文件
-	file, _, err := c.Request.FormFile("file")
+	file, _, err := c.Request.FormFile("File")
 	if err != nil {
 		c.Error(utils.GetError(utils.FILE_ERROR, err.Error()))
 		c.Abort()
@@ -181,7 +180,7 @@ func ImportMark(c *gin.Context) {
 	}
 	item := rows[0]
 	for _, row := range rows[1:] { // 切片，去除表头
-		userId := row[0]
+		userID := row[0]
 		academicYear := row[2]
 
 		for colIndex, colValue := range row[6:] { //第六列后面就是成绩了
@@ -194,15 +193,15 @@ func ImportMark(c *gin.Context) {
 				return
 			}
 			fliter := bson.M{
-				"userId":       userId,
-				"academicYear": academicYear,
-				"itemName":     itemName,
+				"UserID":       userID,
+				"AcademicYear": academicYear,
+				"ItemName":     itemName,
 			}
 			sorce := bson.M{
-				"userId":       userId,
-				"academicYear": academicYear,
-				"itemName":     itemName,
-				"mark":         int64(value),
+				"UserID":       userID,
+				"AcademicYear": academicYear,
+				"ItemName":     itemName,
+				"Mark":         int64(value),
 			}
 			// 新增成绩
 			service.ReplaceOne(c, utils.MongodbName, utils.Score, fliter, sorce)
@@ -223,5 +222,4 @@ func GetStudentInformation(c *gin.Context) {
 		return
 	}
 	utils.ResponseSuccess(c, list)
-	return
 }

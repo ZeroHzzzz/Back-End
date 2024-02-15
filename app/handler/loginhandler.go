@@ -11,7 +11,7 @@ import (
 )
 
 type information struct {
-	UserId   string `json:"userId"`
+	UserID   string `json:"userID"`
 	Password string `json:"passWord"`
 }
 type reponse struct {
@@ -31,7 +31,7 @@ func LoginHandler_Student(c *gin.Context) {
 	var user models.Student
 
 	filter := bson.M{
-		"_id":      information.UserId,
+		"_id":      information.UserID,
 		"passWord": information.Password,
 	}
 
@@ -43,7 +43,7 @@ func LoginHandler_Student(c *gin.Context) {
 	}
 
 	currentUser := models.CurrentUser{
-		UserId:     information.UserId,
+		UserID:     information.UserID,
 		UserName:   user.UserName,
 		Grade:      user.Grade,
 		Role:       "Student",
@@ -75,7 +75,7 @@ func LoginHandler_Counsellor(c *gin.Context) {
 	}
 	var user models.Counsellor
 	filter := bson.M{
-		"_id":      information.UserId,
+		"_id":      information.UserID,
 		"passWord": information.Password,
 	}
 
@@ -87,7 +87,7 @@ func LoginHandler_Counsellor(c *gin.Context) {
 	}
 
 	currentUser := models.CurrentUser{
-		UserId:     information.UserId,
+		UserID:     information.UserID,
 		UserName:   user.UserName,
 		Grade:      user.Grade,
 		Role:       "Counsellor",

@@ -17,17 +17,17 @@ const savePath = utils.Evidence
 func Submission(c *gin.Context) {
 	// 上传申报
 	c.Header("Content-Type", "application/json")
-	userId := c.Param("userId")
-	itemName := c.PostForm("itemName")
-	academicYear := c.PostForm("academicYear")
-	msg := c.PostForm("msg")
+	userID := c.Param("UserID")
+	itemName := c.PostForm("ItemName")
+	academicYear := c.PostForm("AcademicYear")
+	msg := c.PostForm("Msg")
 	data, err := c.MultipartForm()
 	if err != nil {
 		c.Error(utils.GetError(utils.PARAM_ERROR, err.Error()))
 		c.Abort()
 		return
 	}
-	files := data.File["evidence"]
+	files := data.File["Evidence"]
 	fmt.Println(files[0].Filename)
 	destPaths := make([]string, len(files))
 
@@ -45,7 +45,7 @@ func Submission(c *gin.Context) {
 
 	// 从上下文中获取用户信息
 	currentUser := service.GetCurrentUser(c)
-	if currentUser.UserId != userId {
+	if currentUser.UserID != userID {
 		c.Error(utils.GetError(utils.UNAUTHORIZED, nil))
 		c.Abort()
 		return
@@ -57,7 +57,7 @@ func Submission(c *gin.Context) {
 		Msg:          msg,
 		Evidence:     destPaths,
 		Status:       false,
-		CreateAt:     time.Now(),
+		CreateAt:     time.Now().Unix(),
 	}
 	insertResult := service.InsertOne(c, utils.MongodbName, utils.Submission, newSubmission)
 	utils.ResponseSuccess(c, insertResult.InsertedID)
@@ -65,10 +65,10 @@ func Submission(c *gin.Context) {
 
 func GetSubmissionStatus(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	userId := c.Query("userId")
+	userID := c.Query("UserID")
 
 	filter := bson.M{
-		"currentUser.userId": userId,
+		"CurrentUser.UserID": userID,
 	}
 
 	result := service.Find(c, utils.MongodbName, utils.Submission, filter)

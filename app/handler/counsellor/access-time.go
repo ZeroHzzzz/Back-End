@@ -10,8 +10,8 @@ import (
 )
 
 type AccessTime struct {
-	StartTime string `json:"startTime"`
-	EndTime   string `json:"endTime"`
+	StartTime string `json:"StartTime"`
+	EndTime   string `json:"EndTime"`
 }
 
 // 管理员设置访问时间段的处理函数

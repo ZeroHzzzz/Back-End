@@ -9,8 +9,8 @@ import (
 )
 
 type modifiedprofileInformation struct {
-	PassWord    string `json:"passWord"`
-	NewPassword string `json:"newPassword"`
+	PassWord    string `json:"PassWord"`
+	NewPassword string `json:"NewPassword"`
 }
 
 func ModifiedProfileHandler(c *gin.Context) {
@@ -24,15 +24,15 @@ func ModifiedProfileHandler(c *gin.Context) {
 		return
 	}
 
-	userid := c.Param("userId")
+	userid := c.Param("UserID")
 
 	filter := bson.M{
 		"_id":      userid,
-		"passWord": modifiedprofileinformation.PassWord,
+		"PassWord": modifiedprofileinformation.PassWord,
 	}
 	modified := bson.M{
 		"$set": bson.M{
-			"passWord": modifiedprofileinformation.NewPassword,
+			"PassWord": modifiedprofileinformation.NewPassword,
 		},
 	}
 	// 修改之后的文档
@@ -45,6 +45,6 @@ func ModifiedProfileHandler(c *gin.Context) {
 	// 	c.Abort()
 	// }
 	// 发信
-	service.PublishMessage(c, utils.UserExchange, currentUser.UserId, utils.ModifiedProfile)
+	service.PublishMessage(c, utils.UserExchange, currentUser.UserID, utils.ModifiedProfile)
 	utils.ResponseSuccess(c, nil)
 }

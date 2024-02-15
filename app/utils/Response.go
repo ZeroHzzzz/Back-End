@@ -10,9 +10,9 @@ import (
 func Response(c *gin.Context, httpStatusCode int, code int, msg string, data interface{}) {
 	if !c.IsAborted() {
 		c.JSON(httpStatusCode, gin.H{
-			"code": code,
-			"msg":  msg,
-			"data": data,
+			"code":    code,
+			"message": msg,
+			"data":    data,
 		})
 	}
 }

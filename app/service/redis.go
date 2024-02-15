@@ -9,15 +9,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetTopicViewsALikes(c *gin.Context, topicId string) (int64, int64) {
-	objectId, err := primitive.ObjectIDFromHex(topicId)
+func GetTopicViewsALikes(c *gin.Context, topicID string) (int64, int64) {
+	objectID, err := primitive.ObjectIDFromHex(topicID)
 	if err != nil {
 		c.Error(utils.GetError(utils.DECODE_ERROR, err.Error()))
 		c.Abort()
 		return -1, -1
 	}
 	// 获取文章浏览量，先从缓存找，然后找不到再去数据库找
-	filter := bson.M{"_id": objectId}
+	filter := bson.M{"_id": objectID}
 	var topic models.Topic
 	result := FindOne(c, utils.MongodbName, utils.Topic, filter)
 	if result.Err() != nil {
