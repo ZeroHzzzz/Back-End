@@ -5,7 +5,7 @@ import (
 )
 
 type SubmitInformation struct {
-	CurrentUser  `bson:"currentUser"`
+	CurrentUser  `bson:"CurrentUser"`
 	ItemName     string   `bson:"ItemName"`
 	ItemValue    int64    `bson:"ItemValue"`
 	AcademicYear string   `bson:"AcademicYear"`

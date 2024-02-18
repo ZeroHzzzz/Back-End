@@ -35,7 +35,10 @@ func Init(r *gin.Engine) {
 		login.GET("/student", handler.LoginHandler_Student)
 		login.GET("/counsellor", handler.LoginHandler_Counsellor)
 	}
-
+	test := r.Group("/test", midware.ErrorHandler(), midware.MongoClientMiddleware())
+	{
+		test.GET("", handler.Test)
+	}
 	// API 相关接口
 	api := r.Group("/api", midware.ErrorHandler(), midware.MongoClientMiddleware())
 	{
@@ -51,8 +54,8 @@ func Init(r *gin.Engine) {
 			student.POST("/feedbackOradvice", studenthandler.FeedbackOAdvice)
 			// 获取成绩
 			student.GET("/score", studenthandler.GetConcreteSorce)
-			// 提交作业
-			submit := student.Group("/submit")
+			// 提交申报
+			submit := student.Group("/submit", midware.CheckTimeRange())
 			{
 				submit.POST("/:UserID", studenthandler.Submission)
 				submit.GET("/status/:SubmissionID", studenthandler.GetSubmissionStatus)
@@ -63,14 +66,16 @@ func Init(r *gin.Engine) {
 		// 辅导员相关接口
 		counsellor := api.Group("/counsellor", midware.JWTAuthMiddleware("Counsellor"), midware.GetRabbitMQMiddleware(), midware.RedisClientMiddleware())
 		{
-			// 添加事由
+			// 添加理由
 			counsellor.POST("/:CounsellorID/cause", counsellorhandler.AddCause)
-			// 获取事由
+			// 获取理由
 			counsellor.GET("/:CounsellorID/cause", counsellorhandler.GetCause)
-			// 设置辅导员可预约的时间
+			// 设置可提交的时间
 			counsellor.POST("/access-time", counsellorhandler.SetAccessTimeHandler)
 			// 设置公告
 			counsellor.POST("/setannouncement", counsellorhandler.SetAnnouncement)
+			// 修改密码
+			counsellor.PUT("/profile/:UserID", counsellorhandler.ModifiedProfileHandler)
 			// 审核相关接口
 			audit := counsellor.Group("/audit")
 			{

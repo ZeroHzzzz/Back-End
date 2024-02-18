@@ -77,7 +77,11 @@ func FindOne(c *gin.Context, databaseName, collectionName string, filter interfa
 	database := mongoClient.Database(databaseName)
 	collection := database.Collection(collectionName)
 	cursor := collection.FindOne(c, filter)
-	if cursor.Err() != nil {
+	if cursor.Err() == mongo.ErrNoDocuments {
+		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, "document not found"))
+		c.Abort()
+		return nil
+	} else if cursor.Err() != nil {
 		c.Error(utils.GetError(utils.MONGODB_OPERATION_ERROR, cursor.Err().Error()))
 		c.Abort()
 		return nil

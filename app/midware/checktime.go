@@ -4,28 +4,37 @@ import (
 	"context"
 	"hr/app/service"
 	"hr/app/utils"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
 )
 
 func CheckTimeRange() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var startTime, endTime time.Time
+		var startTime, endTime int64
 		redisClient := service.GetRedisClint(c)
-		startTime, err := redisClient.Get(context.Background(), "Start-Time").Time()
-		if err == redis.Nil {
-			startTime = time.Date(1999, time.January, 1, 1, 0, 0, 0, time.UTC)
+		// 警报要降级
+		startTimeStr, err := redisClient.Get(context.Background(), "Start-Time").Result()
+		if err == nil {
+			startTime = 0
 		}
-		endTime, err = redisClient.Get(context.Background(), "End-Time").Time()
-		if err == redis.Nil {
-			startTime = time.Date(3000, time.January, 1, 1, 0, 0, 0, time.UTC)
+		startTime, err = strconv.ParseInt(startTimeStr, 10, 64)
+		if err != nil {
+			startTime = 0
 		}
 
-		currentTime := time.Now()
+		endTimeStr, err := redisClient.Get(context.Background(), "End-Time").Result()
+		if err != nil {
+			endTime = 4070908800
+		}
+		endTime, err1 := strconv.ParseInt(endTimeStr, 10, 64)
+		if err1 != nil {
+			endTime = 4070908800
+		}
 
-		if currentTime.Before(startTime) || currentTime.After(endTime) {
+		currentTime := time.Now().Unix()
+		if currentTime > endTime || currentTime < startTime {
 			c.Error(utils.GetError(utils.NOACCESS, nil))
 			c.Abort()
 			return

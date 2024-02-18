@@ -10,7 +10,7 @@ import (
 
 type information struct {
 	UserID   string `json:"UserID"`
-	Category string `json:"Vategory"`
+	Category string `json:"Category"`
 	Content  string `json:"Content"`
 }
 

@@ -11,8 +11,8 @@ import (
 )
 
 type information struct {
-	UserID   string `json:"UserID"`
-	Password string `json:"PassWord"`
+	UserID   string `json:"UserID" binding:"required"`
+	PassWord string `json:"PassWord" binding:"required"`
 }
 type reponse struct {
 	CurrentUser models.CurrentUser
@@ -31,11 +31,17 @@ func LoginHandler_Student(c *gin.Context) {
 	var user models.Student
 
 	filter := bson.M{
-		"_id":      information.UserID,
-		"PassWord": information.Password,
+		"UserID":   information.UserID,
+		"PassWord": information.PassWord,
 	}
 
-	err = service.FindOne(c, utils.MongodbName, utils.Student, filter).Decode(&user)
+	result := service.FindOne(c, utils.MongodbName, utils.Student, filter)
+	if result == nil {
+		c.Error(utils.LOGIN_ERROR)
+		c.Abort()
+		return
+	}
+	err = result.Decode(&user)
 	if err != nil {
 		c.Error(utils.GetError(utils.LOGIN_ERROR, err.Error()))
 		c.Abort()
@@ -75,11 +81,17 @@ func LoginHandler_Counsellor(c *gin.Context) {
 	}
 	var user models.Counsellor
 	filter := bson.M{
-		"_id":      information.UserID,
-		"PassWord": information.Password,
+		"UserID":   information.UserID,
+		"PassWord": information.PassWord,
 	}
 
-	err = service.FindOne(c, utils.MongodbName, utils.Counsellor, filter).Decode(&user)
+	result := service.FindOne(c, utils.MongodbName, utils.Counsellor, filter)
+	if result == nil {
+		c.Error(utils.LOGIN_ERROR)
+		c.Abort()
+		return
+	}
+	err = result.Decode(&user)
 	if err != nil {
 		c.Error(utils.GetError(utils.LOGIN_ERROR, err.Error()))
 		c.Abort()

@@ -9,7 +9,7 @@ type CurrentUser struct {
 }
 
 type Counsellor struct {
-	UserID     string `bson:"_id"`
+	UserID     string `bson:"UserID"`
 	UserName   string `bson:"UserName"`
 	PassWord   string `bson:"PassWord"`
 	Grade      string `bson:"Grade"`
@@ -17,7 +17,7 @@ type Counsellor struct {
 }
 
 type Student struct {
-	UserID     string `bson:"_id"`
+	UserID     string `bson:"UserID"`
 	UserName   string `bson:"UserName"`
 	PassWord   string `bson:"PassWord"`
 	Class      string `bson:"Class"`

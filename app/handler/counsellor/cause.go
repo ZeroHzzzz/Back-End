@@ -33,7 +33,7 @@ func AddCause(c *gin.Context) {
 func GetCause(c *gin.Context) {
 	userID := c.Param("CounsellorID")
 	filter := bson.M{
-		"_id": userID,
+		"UserID": userID,
 	}
 	var list []models.Cause
 	cursor := service.Find(c, utils.MongodbName, utils.Cause, filter)

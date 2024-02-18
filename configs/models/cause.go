@@ -1,6 +1,6 @@
 package models
 
 type Cause struct {
-	UserID string `bson:"_id"`
+	UserID string `bson:"UserID"`
 	Msg    string `bson:"Msg"`
 }

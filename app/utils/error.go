@@ -24,6 +24,7 @@ var (
 	RMQ_DECLARE_CONSUMER_ERROR = NewError(405, "RabbitMQ 声明消费者失败")
 	RMQ_PUBLISH_ERROR          = NewError(406, "RabbitMQ 生产信息失败")
 	REDIS_INIT_ERROR           = NewError(501, "Redis 初始化失败")
+	REDIS_OPERATION_ERROR      = NewError(502, "Redis 操作失败")
 	INNER_ERROR                = NewError(601, "服务器内部错误")
 	CONNECT_ERROR              = NewError(602, "连接异常")
 	LIMIT_ERROR                = NewError(603, "当前访问人数过多，服务器限流")

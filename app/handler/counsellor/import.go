@@ -34,7 +34,7 @@ func CorrectGrade(c *gin.Context) {
 		return
 	}
 	filter := bson.M{
-		"_id":          userID,
+		"UserID":       userID,
 		"AcademicYear": information.AcademicYear,
 		"ItemName":     information.ItemName,
 	}
@@ -83,11 +83,12 @@ func ImportCounsellor(c *gin.Context) {
 		grade := row[2]
 		profession := row[3]
 		fliter := bson.M{
-			"_id": userID,
+			"UserID": userID,
 		}
 		user := bson.M{
-			"_id":        userID,
+			"UserID":     userID,
 			"UserName":   userName,
+			"PassWord":   fmt.Sprintf("ZJUT%s", userID[len(userID)-6:]),
 			"Grade":      grade,
 			"Profession": profession,
 		}
@@ -133,12 +134,12 @@ func ImportStudent(c *gin.Context) {
 		profession := row[3]
 		class := row[4]
 		filter := bson.M{
-			"_id": userID,
+			"UserID": userID,
 		}
 		user := bson.M{
-			"_id":        userID,
+			"UserID":     userID,
 			"UserName":   userName,
-			"PassWord":   fmt.Sprintf("ZJUT%s", userID[:4]),
+			"PassWord":   fmt.Sprintf("ZJUT%s", userID[len(userID)-6:]),
 			"Profession": profession,
 			"Grade":      grade,
 			"Class":      class,

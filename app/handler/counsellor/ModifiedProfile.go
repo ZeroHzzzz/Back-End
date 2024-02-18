@@ -1,4 +1,4 @@
-package studenthandler
+package counsellorhandler
 
 import (
 	"hr/app/service"
@@ -27,7 +27,7 @@ func ModifiedProfileHandler(c *gin.Context) {
 	userid := c.Param("UserID")
 
 	filter := bson.M{
-		"UserID":   userid,
+		"UserId":   userid,
 		"PassWord": modifiedprofileinformation.PassWord,
 	}
 	modified := bson.M{
@@ -36,7 +36,7 @@ func ModifiedProfileHandler(c *gin.Context) {
 		},
 	}
 	// 修改之后的文档
-	_ = service.UpdateOne(c, utils.MongodbName, utils.Student, filter, modified)
+	_ = service.UpdateOne(c, utils.MongodbName, utils.Counsellor, filter, modified)
 	currentUser := service.GetCurrentUser(c)
 
 	// newToken, err := midware.GenerateToken(currentUser)
